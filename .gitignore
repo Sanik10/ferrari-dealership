@@ -134,3 +134,39 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Node.js
+node_modules/
+npm-debug.log
+
+# Зависимости
+/backend/node_modules/
+/frontend/react-dealership/node_modules/
+
+# Локальные файлы
+.env
+.DS_Store
+
+# Папки загрузок
+/backend/uploads/
+
+# Сборки
+/frontend/react-dealership/dist/
+/frontend/react-dealership/build/
+
+# # Сначала исключите большие папки
+# echo "backend/node_modules/" > .gitignore
+# echo "frontend/react-dealership/node_modules/" >> .gitignore
+
+# git add .gitignore
+# git commit -m "Добавление .gitignore"
+# git push origin main
+
+# # Затем добавляйте остальные папки постепенно
+# git add backend
+# git commit -m "Добавление backend"
+# git push origin main
+
+# git add frontend
+# git commit -m "Добавление frontend"
+# git push origin main
