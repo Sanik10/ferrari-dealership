@@ -29,7 +29,7 @@ import {
   IconButton,
   Rating
 } from '@mui/material';
-import { styled, alpha } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 // Используем motion, но импортируем только когда он фактически используется
 import { toast, Toaster } from 'react-hot-toast';
 
@@ -62,9 +62,9 @@ import { carAPI, testDriveAPI, reviewAPI } from '../services/api';
 
 // Styled components
 const StyledPaper = styled(Paper)(() => ({
-  backgroundColor: 'rgba(25, 25, 25, 0.8)',
+  backgroundColor: 'rgba(25, 25, 25, 0.9)',
   backdropFilter: 'blur(10px)',
-  borderRadius: '12px',
+  borderRadius: '8px', // Унифицируем радиус скругления
   border: '1px solid rgba(255, 255, 255, 0.1)',
   color: 'white',
   overflow: 'hidden',
@@ -72,22 +72,40 @@ const StyledPaper = styled(Paper)(() => ({
   transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
   '&:hover': {
     transform: 'translateY(-5px)',
-    boxShadow: '0 12px 20px rgba(0, 0, 0, 0.2)'
+    boxShadow: '0 12px 20px rgba(255, 40, 0, 0.15)'
   }
+}));
+
+const FerrariButton = styled(Button)(() => ({
+  backgroundColor: '#FF2800',
+  color: 'white',
+  borderRadius: '6px', // Унифицируем радиус скругления
+  textTransform: 'none',
+  fontWeight: 'bold',
+  padding: '10px 20px',
+  boxShadow: '0 4px 8px rgba(255, 40, 0, 0.2)',
+  '&:hover': {
+    backgroundColor: '#CC2000',
+    boxShadow: '0 6px 12px rgba(255, 40, 0, 0.3)',
+  },
+  transition: 'all 0.3s ease',
 }));
 
 const FeatureChip = styled(Chip)(({ theme }) => ({
   margin: theme.spacing(0.5),
-  backgroundColor: alpha('#FF2800', 0.1),
+  backgroundColor: 'rgba(40, 40, 40, 0.8)',
   color: 'white',
-  borderColor: alpha('#FF2800', 0.3),
+  borderColor: 'rgba(255, 40, 0, 0.3)',
+  borderRadius: '6px', // Унифицируем радиус скругления
   '&:hover': {
-    backgroundColor: alpha('#FF2800', 0.2),
+    backgroundColor: 'rgba(255, 40, 0, 0.1)',
   }
 }));
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   backgroundColor: 'transparent',
+  borderRadius: '8px', // Унифицируем радиус скругления
+  overflow: 'hidden',
   '& .MuiTableCell-root': {
     borderColor: 'rgba(255, 255, 255, 0.1)',
     color: 'white',
@@ -107,6 +125,7 @@ const StyledTab = styled(Tab)(({ theme }) => ({
   padding: theme.spacing(1, 2),
   textTransform: 'none',
   fontWeight: 500,
+  borderRadius: '6px', // Унифицируем радиус скругления
 }));
 
 const MainImageContainer = styled(Box)(({ theme }) => ({
@@ -118,7 +137,7 @@ const MainImageContainer = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     height: 250,
   },
-  borderRadius: '12px',
+  borderRadius: '8px', // Унифицируем радиус скругления
   overflow: 'hidden',
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
   '&:hover .overlay-actions': {
@@ -138,18 +157,18 @@ const ThumbsContainer = styled(Box)(({ theme }) => ({
   },
   '&::-webkit-scrollbar-track': {
     background: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: '10px',
+    borderRadius: '6px', // Унифицируем радиус скругления
   },
   '&::-webkit-scrollbar-thumb': {
     background: 'rgba(255, 40, 0, 0.5)',
-    borderRadius: '10px',
+    borderRadius: '6px', // Унифицируем радиус скругления
   },
 }));
 
 const ThumbImage = styled(Box)(({ active }) => ({
   width: 90,
   height: 60,
-  borderRadius: '8px',
+  borderRadius: '6px', // Унифицируем радиус скругления
   overflow: 'hidden',
   border: active === 'true' ? '2px solid #FF2800' : '2px solid transparent',
   opacity: active === 'true' ? 1 : 0.7,
@@ -162,13 +181,13 @@ const ThumbImage = styled(Box)(({ active }) => ({
   flexShrink: 0,
 }));
 
-const CarIconWithText = styled(Box)(({ theme }) => ({
+const CarIconWithText = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  padding: theme.spacing(2),
-  borderRadius: '8px',
-  backgroundColor: 'rgba(255, 255, 255, 0.03)',
+  padding: '16px',
+  borderRadius: '8px', // Унифицируем радиус скругления
+  backgroundColor: 'rgba(25, 25, 30, 0.8)',
   border: '1px solid rgba(255, 255, 255, 0.06)',
   transition: 'all 0.3s ease',
   '&:hover': {
@@ -226,12 +245,19 @@ const CarDetails = () => {
         const response = await carAPI.getCar(id);
         console.log("Car details retrieved:", response);
         
+        if (!response || !response.data) {
+          setError('Не удалось загрузить информацию об автомобиле');
+          return;
+        }
+        
         // Обработка URL изображений
         const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
         
         if (response.data && response.data.images && Array.isArray(response.data.images)) {
           // Преобразуем URL-адреса изображений
           response.data.images = response.data.images.map(img => {
+            if (!img) return null;
+            
             // Проверяем, не является ли уже URL полным
             if (img.startsWith('http') || img.startsWith('blob:')) {
               return img;
@@ -243,7 +269,7 @@ const CarDetails = () => {
             } else {
               return `${baseUrl}${img.startsWith('/') ? img : `/${img}`}`;
             }
-          });
+          }).filter(Boolean); // Удаляем null значения
         }
         
         // Обрабатываем URL главного изображения, если оно есть
@@ -264,19 +290,13 @@ const CarDetails = () => {
         const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
         setIsFavorite(favorites.includes(id));
         
-        // Get similar cars
+        // Get similar cars - обновляем подход с учетом реальных данных API
         const fetchSimilarCars = async (car) => {
           try {
-            if (!car || !car.category) {
-              return;
-            }
+            if (!car || !car.category) return;
             
             // Получаем похожие автомобили той же категории, исключая текущий
-            const similarResponse = await carAPI.getAllCars({
-              category: car.category
-            });
-            
-            console.log('Похожие автомобили (ответ API):', similarResponse);
+            const similarResponse = await carAPI.getAllCars();
             
             let similarCarsData = [];
             
@@ -284,79 +304,70 @@ const CarDetails = () => {
               similarCarsData = similarResponse;
             } else if (similarResponse.data && Array.isArray(similarResponse.data)) {
               similarCarsData = similarResponse.data;
-            } else if (similarResponse.items && Array.isArray(similarResponse.items)) {
-              similarCarsData = similarResponse.items;
             } else {
               console.error('Неожиданный формат ответа API (похожие):', similarResponse);
+              return;
             }
             
-            if (similarCarsData.length > 0) {
-              const filtered = similarCarsData.filter(c => c.id !== car.id).slice(0, 4);
+            // Фильтруем по категории и исключаем текущий автомобиль
+            const filtered = similarCarsData
+              .filter(c => c.id !== car.id && c.category === car.category)
+              .slice(0, 4);
+            
+            if (filtered.length === 0) {
+              // Если нет автомобилей той же категории, просто берем любые другие
+              const otherCars = similarCarsData
+                .filter(c => c.id !== car.id)
+                .slice(0, 4);
               
-              // Добавляем логирование для диагностики данных похожих автомобилей
-              console.log('Найдено похожих автомобилей:', filtered.length);
-              
-              if (filtered.length > 0) {
-                console.log('Структура первого похожего автомобиля:', {
-                  id: filtered[0].id,
-                  brand: filtered[0].brand,
-                  model: filtered[0].model,
-                  mainImage: filtered[0].mainImage,
-                  hasImages: filtered[0].images && filtered[0].images.length > 0,
-                  firstImage: filtered[0].images && filtered[0].images.length > 0 ? filtered[0].images[0] : null
-                });
-              }
-              
-              // Обработка URL изображений для похожих автомобилей
-              const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
-              
-              const processedCars = filtered.map(car => {
-                // Копируем автомобиль
-                const processedCar = {...car};
-                
-                // Обрабатываем URL главного изображения, если оно есть
-                if (processedCar.mainImage) {
-                  if (!processedCar.mainImage.startsWith('http') && !processedCar.mainImage.startsWith('blob:')) {
-                    if (processedCar.mainImage.startsWith('/api/')) {
-                      processedCar.mainImage = `${baseUrl}${processedCar.mainImage.substring(4)}`;
-                    } else {
-                      processedCar.mainImage = `${baseUrl}${processedCar.mainImage.startsWith('/') ? processedCar.mainImage : `/${processedCar.mainImage}`}`;
-                    }
-                  }
-                }
-                
-                // Обрабатываем URL всех изображений
-                if (processedCar.images && Array.isArray(processedCar.images) && processedCar.images.length > 0) {
-                  processedCar.images = processedCar.images.map(img => {
-                    if (img.startsWith('http') || img.startsWith('blob:')) {
-                      return img;
-                    }
-                    
-                    if (img.startsWith('/api/')) {
-                      return `${baseUrl}${img.substring(4)}`;
-                    } else {
-                      return `${baseUrl}${img.startsWith('/') ? img : `/${img}`}`;
-                    }
-                  });
-                }
-                
-                return processedCar;
-              });
-              
-              // Логируем обработанные данные первого автомобиля
-              if (processedCars.length > 0) {
-                console.log('Обработанный первый похожий автомобиль:', {
-                  id: processedCars[0].id,
-                  mainImage: processedCars[0].mainImage,
-                  firstImage: processedCars[0].images && processedCars[0].images.length > 0 ? processedCars[0].images[0] : null
-                });
-              }
-              
+              const processedCars = processCarImages(otherCars, baseUrl);
               setSimilarCars(processedCars);
+              return;
             }
+            
+            const processedCars = processCarImages(filtered, baseUrl);
+            setSimilarCars(processedCars);
           } catch (error) {
             console.error('Error fetching similar cars:', error);
           }
+        };
+        
+        // Вспомогательная функция для обработки изображений в автомобилях
+        const processCarImages = (cars, baseUrl) => {
+          return cars.map(car => {
+            // Копируем автомобиль
+            const processedCar = {...car};
+            
+            // Обрабатываем URL главного изображения, если оно есть
+            if (processedCar.mainImage) {
+              if (!processedCar.mainImage.startsWith('http') && !processedCar.mainImage.startsWith('blob:')) {
+                if (processedCar.mainImage.startsWith('/api/')) {
+                  processedCar.mainImage = `${baseUrl}${processedCar.mainImage.substring(4)}`;
+                } else {
+                  processedCar.mainImage = `${baseUrl}${processedCar.mainImage.startsWith('/') ? processedCar.mainImage : `/${processedCar.mainImage}`}`;
+                }
+              }
+            }
+            
+            // Обрабатываем URL всех изображений
+            if (processedCar.images && Array.isArray(processedCar.images) && processedCar.images.length > 0) {
+              processedCar.images = processedCar.images.map(img => {
+                if (!img) return null;
+                
+                if (img.startsWith('http') || img.startsWith('blob:')) {
+                  return img;
+                }
+                
+                if (img.startsWith('/api/')) {
+                  return `${baseUrl}${img.substring(4)}`;
+                } else {
+                  return `${baseUrl}${img.startsWith('/') ? img : `/${img}`}`;
+                }
+              }).filter(Boolean); // Удаляем null значения
+            }
+            
+            return processedCar;
+          });
         };
         
         fetchSimilarCars(response.data);
@@ -364,14 +375,13 @@ const CarDetails = () => {
         // Get reviews - обрабатываем возможную ошибку API отзывов
         try {
           const reviewsResponse = await reviewAPI.getReviews({
-            carId: id,
-            approved: true,
-            limit: 5
+            carId: id
           });
-          setReviews(reviewsResponse.data.items || []);
+          
+          const reviewsData = reviewsResponse.data?.items || reviewsResponse.items || [];
+          setReviews(reviewsData);
         } catch (reviewErr) {
           console.log('Отзывы недоступны:', reviewErr.message);
-          // Если API отзывов не реализовано, просто устанавливаем пустой массив
           setReviews([]);
         }
         
@@ -423,7 +433,6 @@ const CarDetails = () => {
       notes: ''
     });
     setSubmitSuccess(null);
-    fetchAvailableSlots();
   };
   
   // Close test drive dialog
@@ -431,19 +440,74 @@ const CarDetails = () => {
     setOpenTestDriveDialog(false);
   };
   
-  // Fetch available test drive slots
-  const fetchAvailableSlots = async () => {
-    if (!car) return;
+  // Функция для генерации временных слотов
+  const generateTimeSlots = (startHour = 10) => {
+    const slots = [];
+    const endHour = 19; // Рабочие часы до 19:00
     
+    for (let hour = startHour; hour <= endHour; hour++) {
+      // Не добавляем слот на обед
+      if (hour !== 13) {
+        slots.push(`${hour}:00`);
+      }
+    }
+    
+    return slots;
+  };
+
+  // Константа с дефолтными временными слотами
+  const DEFAULT_TIME_SLOTS = ['10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+  
+  // Состояние загрузки слотов
+  const [slotLoading, setSlotLoading] = useState(false);
+  
+  // Функция для получения доступных слотов для тест-драйва
+  const fetchAvailableSlots = async (date) => {
+    // В реальной ситуации это был бы API запрос
+    // Но для демонстрации мы создадим имитацию
     try {
-      const today = new Date();
-      const formattedDate = today.toISOString().split('T')[0];
+      if (!date) return;
       
-      const response = await testDriveAPI.getAvailableSlots(formattedDate, car.id);
-      setAvailableSlots(response.data || []);
-    } catch (err) {
-      console.error('Error fetching available slots:', err);
-      setAvailableSlots([]);
+      setSlotLoading(true);
+      
+      // Попытка получить слоты через API
+      try {
+        const response = await testDriveAPI.getAvailableSlots({
+          carId: id,
+          date: date
+        });
+
+        if (response && response.data && Array.isArray(response.data.slots)) {
+          setAvailableSlots(response.data.slots);
+          return;
+        }
+      } catch (apiError) {
+        console.warn("API error when fetching slots, using fallback:", apiError);
+      }
+      
+      // Имитация API запроса со случайной задержкой от 300 до 800 мс
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 500 + 300));
+      
+      const currentDate = new Date();
+      const selectedDate = new Date(date);
+      
+      // Если выбранная дата сегодня, учитываем текущее время
+      if (selectedDate.toDateString() === currentDate.toDateString()) {
+        const currentHour = currentDate.getHours();
+        
+        // Генерируем доступные слоты после текущего часа
+        const slots = generateTimeSlots(currentHour + 1);
+        setAvailableSlots(slots);
+      } else {
+        // Иначе возвращаем все стандартные слоты
+        const slots = generateTimeSlots();
+        setAvailableSlots(slots);
+      }
+    } catch (error) {
+      console.error('Error fetching available slots:', error);
+      setAvailableSlots(DEFAULT_TIME_SLOTS);
+    } finally {
+      setSlotLoading(false);
     }
   };
   
@@ -457,20 +521,7 @@ const CarDetails = () => {
     
     // If date changed, fetch available slots for that date
     if (name === 'preferredDate') {
-      fetchAvailableSlotsForDate(value);
-    }
-  };
-  
-  // Fetch available slots for a specific date
-  const fetchAvailableSlotsForDate = async (date) => {
-    if (!car || !date) return;
-    
-    try {
-      const response = await testDriveAPI.getAvailableSlots(date, car.id);
-      setAvailableSlots(response.data || []);
-    } catch (err) {
-      console.error('Error fetching available slots for date:', err);
-      setAvailableSlots([]);
+      fetchAvailableSlots(value);
     }
   };
   
@@ -614,6 +665,113 @@ const CarDetails = () => {
     }
   };
   
+  // Функция для рендеринга технических характеристик в виде таблицы
+  const renderSpecifications = () => {
+    // Группы характеристик
+    const specGroups = [
+      {
+        title: "Двигатель и Производительность",
+        specs: [
+          { name: "Двигатель", value: car.engine },
+          { name: "Мощность", value: car.horsepower ? `${car.horsepower} л.с.` : null },
+          { name: "Крутящий момент", value: car.torque ? `${car.torque} Нм` : null },
+          { name: "Разгон 0-100 км/ч", value: car.acceleration ? `${car.acceleration} сек` : null },
+          { name: "Максимальная скорость", value: car.maxSpeed ? `${car.maxSpeed} км/ч` : null },
+        ]
+      },
+      {
+        title: "Трансмиссия и Шасси",
+        specs: [
+          { name: "Трансмиссия", value: car.transmission },
+          { name: "Привод", value: car.driveType },
+          { name: "Керамические тормоза", value: car.carbonCeramic ? "Да" : "Нет" },
+          { name: "Колесная база", value: car.wheelbase ? `${car.wheelbase} мм` : null },
+        ]
+      },
+      {
+        title: "Расход и Экологичность",
+        specs: [
+          { name: "Тип топлива", value: car.fuelType },
+          { name: "Расход топлива", value: car.fuelConsumption ? `${car.fuelConsumption} л/100км` : null },
+          { name: "Объем бака", value: car.fuelTankCapacity ? `${car.fuelTankCapacity} л` : null },
+        ]
+      },
+      {
+        title: "Габариты и Вес",
+        specs: [
+          { name: "Длина", value: car.length ? `${car.length} мм` : null },
+          { name: "Ширина", value: car.width ? `${car.width} мм` : null },
+          { name: "Высота", value: car.height ? `${car.height} мм` : null },
+          { name: "Снаряженная масса", value: car.weight ? `${car.weight} кг` : null },
+        ]
+      },
+      {
+        title: "Дополнительная информация",
+        specs: [
+          { name: "Пробег", value: car.mileage !== undefined ? `${car.mileage.toLocaleString()} км` : null },
+          { name: "Год выпуска", value: car.year },
+          { name: "Особая серия", value: car.specialSeries },
+          { name: "Сертификат подлинности", value: car.certificateOfAuthenticity ? "Есть" : "Нет" },
+        ]
+      }
+    ];
+
+    return (
+      <>
+        {specGroups.map((group, groupIndex) => {
+          // Фильтруем только те характеристики, у которых есть значения
+          const validSpecs = group.specs.filter(spec => spec.value !== null && spec.value !== undefined);
+          
+          if (validSpecs.length === 0) {
+            return null; // Не отображаем группу, если все значения отсутствуют
+          }
+          
+          return (
+            <Box key={groupIndex} sx={{ mb: 4, '&:last-child': { mb: 0 } }}>
+              <Typography variant="h6" gutterBottom>
+                {group.title}
+              </Typography>
+              <TableContainer component={Paper} sx={{ 
+                bgcolor: 'transparent', 
+                boxShadow: 'none', 
+                '& .MuiTableCell-root': { 
+                  borderColor: 'rgba(255,255,255,0.1)' 
+                }
+              }}>
+                <Table size="small">
+                  <TableBody>
+                    {validSpecs.map((spec, index) => (
+                      <TableRow key={index} sx={{ 
+                        '&:last-child td, &:last-child th': { border: 0 },
+                        '&:nth-of-type(odd)': { bgcolor: 'rgba(255,255,255,0.03)' }
+                      }}>
+                        <TableCell sx={{ color: 'rgba(255,255,255,0.7)', width: '50%' }}>
+                          {spec.name}
+                        </TableCell>
+                        <TableCell sx={{ color: 'white', fontWeight: 'medium' }}>
+                          {spec.value}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          );
+        })}
+        
+        {/* Если нет данных ни в одной группе */}
+        {specGroups.every(group => 
+          group.specs.every(spec => spec.value === null || spec.value === undefined)
+        ) && (
+          <Typography variant="body1" sx={{ opacity: 0.7, fontStyle: 'italic', textAlign: 'center', py: 4 }}>
+            Подробные технические характеристики отсутствуют
+          </Typography>
+        )}
+      </>
+    );
+  };
+  
   // Loading state
   if (loading) {
     return (
@@ -731,6 +889,7 @@ const CarDetails = () => {
             style: {
               background: '#333',
               color: '#fff',
+              borderRadius: '6px', // Унифицируем радиус скругления
             },
             success: {
               iconTheme: {
@@ -747,151 +906,162 @@ const CarDetails = () => {
           }}
         />
         
-        <div>
-          {/* Back button and title */}
-          <div>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-              <Button
-                startIcon={<ArrowBackIcon />}
-                onClick={() => navigate('/catalog')}
+        {/* Back button and title */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/catalog')}
+            sx={{ 
+              color: 'white',
+              borderRadius: '6px', // Унифицируем радиус скругления
+              '&:hover': {
+                color: '#FF2800'
+              }
+            }}
+          >
+            Вернуться к каталогу
+          </Button>
+          
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <IconButton 
+              onClick={handleToggleFavorite}
+              sx={{ 
+                color: isFavorite ? '#FF2800' : 'white',
+                '&:hover': {
+                  color: '#FF2800'
+                }
+              }}
+              aria-label={isFavorite ? "Удалить из избранного" : "Добавить в избранное"}
+            >
+              {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            </IconButton>
+            
+            <IconButton 
+              onClick={handleShare}
+              sx={{ 
+                color: 'white',
+                '&:hover': {
+                  color: '#FF2800'
+                }
+              }}
+              aria-label="Поделиться"
+            >
+              <ShareIcon />
+            </IconButton>
+          </Box>
+        </Box>
+        
+        {/* Car title and price */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="overline" sx={{ color: '#FF2800', letterSpacing: 2 }}>
+            {car.brand}
+          </Typography>
+          
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            sx={{ 
+              fontWeight: 700,
+              mb: 1,
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}
+          >
+            {car.model} {car.specialSeries ? `${car.specialSeries}` : ''}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Chip 
+              label={formatPrice(car.price)} 
+              sx={{ 
+                backgroundColor: '#FF2800',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '1.1rem',
+                height: 40,
+                borderRadius: '6px', // Унифицируем радиус скругления
+                '& .MuiChip-icon': {
+                  color: 'white'
+                }
+              }}
+            />
+            
+            {car.mileage !== undefined && (
+              <Chip 
+                icon={<SpeedIcon />} 
+                label={`${car.mileage.toLocaleString()} км`} 
+                variant="outlined" 
                 sx={{ 
+                  borderColor: 'rgba(255,255,255,0.3)',
                   color: 'white',
-                  '&:hover': {
-                    color: '#FF2800'
-                  }
+                  borderRadius: '6px', // Унифицируем радиус скругления
                 }}
-              >
-                Вернуться к каталогу
-              </Button>
-              
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton 
-                  onClick={handleToggleFavorite}
-                  sx={{ 
-                    color: isFavorite ? '#FF2800' : 'white',
-                    '&:hover': {
-                      color: '#FF2800'
-                    }
-                  }}
-                >
-                  {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                </IconButton>
-                
-                <IconButton 
-                  onClick={handleShare}
-                  sx={{ 
-                    color: 'white',
-                    '&:hover': {
-                      color: '#FF2800'
-                    }
-                  }}
-                >
-                  <ShareIcon />
-                </IconButton>
-              </Box>
-            </Box>
-          </div>
-          
-          {/* Car title and price */}
-          <div>
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="overline" sx={{ color: '#FF2800', letterSpacing: 2 }}>
-                {car.condition === 'new' ? 'НОВЫЙ АВТОМОБИЛЬ' : 'С ПРОБЕГОМ'}
-              </Typography>
-              
-              <Typography 
-                variant="h3" 
-                component="h1" 
+              />
+            )}
+            
+            <Chip 
+              icon={<CalendarMonthIcon />} 
+              label={car.year} 
+              variant="outlined" 
+              sx={{ 
+                borderColor: 'rgba(255,255,255,0.3)',
+                color: 'white',
+                borderRadius: '6px', // Унифицируем радиус скругления
+              }}
+            />
+            
+            {car.category && (
+              <Chip 
+                label={car.category === 'sport' ? 'Sport' : 
+                      car.category === 'gt' ? 'GT' : 
+                      car.category === 'hypercar' ? 'Hypercar' : 
+                      car.category === 'classic' ? 'Classic' : 
+                      car.category === 'limited_edition' ? 'Limited Edition' : 
+                      car.category} 
+                variant="outlined" 
                 sx={{ 
-                  fontWeight: 700,
-                  mb: 1,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  backgroundColor: 'rgba(255,40,0,0.1)',
+                  borderColor: 'rgba(255,40,0,0.3)',
+                  color: 'white',
+                  borderRadius: '6px', // Унифицируем радиус скругления
                 }}
-              >
-                Ferrari {car.model} {car.year}
-              </Typography>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                <Chip 
-                  icon={<AttachMoneyIcon />} 
-                  label={formatPrice(car.price)} 
-                  sx={{ 
-                    backgroundColor: '#FF2800',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '1.1rem',
-                    height: 40,
-                    '& .MuiChip-icon': {
-                      color: 'white'
-                    }
-                  }}
-                />
-                
-                <Chip 
-                  icon={<SpeedIcon />} 
-                  label={car.mileage ? `${car.mileage.toLocaleString()} км` : 'Новый'} 
-                  variant="outlined" 
-                  sx={{ 
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    color: 'white'
-                  }}
-                />
-                
-                <Chip 
-                  icon={<CalendarMonthIcon />} 
-                  label={car.year} 
-                  variant="outlined" 
-                  sx={{ 
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    color: 'white'
-                  }}
-                />
-                
-                <Chip 
-                  icon={<ColorLensIcon />} 
-                  label={car.color} 
-                  variant="outlined" 
-                  sx={{ 
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    color: 'white'
-                  }}
-                />
-                
-                <Chip 
-                  icon={<EngineIcon />} 
-                  label={`${car.engine} л, ${car.power} л.с.`} 
-                  variant="outlined" 
-                  sx={{ 
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    color: 'white'
-                  }}
-                />
-              </Box>
-            </Box>
-          </div>
-          
-          {/* Car images */}
-          <div>
-            <Box sx={{ mb: 6 }}>
+              />
+            )}
+          </Box>
+        </Box>
+        
+        {/* Image gallery */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={8}>
+            <Box sx={{ position: 'relative' }}>
               <MainImageContainer>
-                <Box
-                  component="img"
-                  src={car.images[currentImageIndex] || '/images/car-placeholder.jpg'}
-                  alt={`Ferrari ${car.model}`}
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    objectPosition: 'center',
-                  }}
-                  onError={(e) => {
-                    console.error(`Ошибка загрузки основного изображения: ${car.images[currentImageIndex]}`);
-                    e.target.src = '/images/car-placeholder.jpg';
-                  }}
-                />
+                {car.images && car.images.length > 0 ? (
+                  <img 
+                    src={car.images[currentImageIndex]} 
+                    alt={`${car.brand} ${car.model}`}
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover',
+                    }}
+                    onError={(e) => {
+                      e.target.src = '/images/car-placeholder.jpg';
+                    }}
+                  />
+                ) : (
+                  <img 
+                    src="/images/car-placeholder.jpg" 
+                    alt={`${car.brand} ${car.model}`}
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover',
+                    }}
+                  />
+                )}
                 
-                {/* Image navigation */}
+                {/* Overlay for image navigation - improved UI */}
                 <Box
+                  className="overlay-actions"
                   sx={{
                     position: 'absolute',
                     top: 0,
@@ -899,86 +1069,98 @@ const CarDetails = () => {
                     right: 0,
                     bottom: 0,
                     display: 'flex',
-                    alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: 2,
-                  }}
-                >
-                  <IconButton
-                    onClick={handlePrevImage}
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 40, 0, 0.7)',
-                      },
-                    }}
-                  >
-                    <ArrowBackIosIcon />
-                  </IconButton>
-                  
-                  <IconButton
-                    onClick={handleNextImage}
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 40, 0, 0.7)',
-                      },
-                    }}
-                  >
-                    <ArrowForwardIosIcon />
-                  </IconButton>
-                </Box>
-                
-                {/* Actions overlay */}
-                <Box
-                  className="overlay-actions"
-                  sx={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 16,
-                    display: 'flex',
+                    alignItems: 'center',
+                    px: 2,
+                    background: 'linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 15%, rgba(0,0,0,0) 85%, rgba(0,0,0,0.3) 100%)',
                     opacity: 0,
                     transition: 'opacity 0.3s ease',
                   }}
                 >
-                  <IconButton
-                    onClick={() => setOpenFullImage(true)}
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 40, 0, 0.7)',
-                      },
-                      marginLeft: 1,
-                    }}
-                  >
-                    <FullscreenIcon />
-                  </IconButton>
+                  {car.images && car.images.length > 1 && (
+                    <>
+                      <IconButton
+                        onClick={handlePrevImage}
+                        sx={{
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255,40,0,0.7)',
+                          },
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        }}
+                        aria-label="Предыдущее изображение"
+                      >
+                        <ArrowBackIosIcon />
+                      </IconButton>
+                      
+                      <IconButton
+                        onClick={handleNextImage}
+                        sx={{
+                          backgroundColor: 'rgba(0,0,0,0.5)',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255,40,0,0.7)',
+                          },
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        }}
+                        aria-label="Следующее изображение"
+                      >
+                        <ArrowForwardIosIcon />
+                      </IconButton>
+                    </>
+                  )}
                 </Box>
+                
+                {/* Fullscreen button */}
+                <IconButton
+                  onClick={() => setOpenFullImage(true)}
+                  sx={{
+                    position: 'absolute',
+                    bottom: 16,
+                    right: 16,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255,40,0,0.7)',
+                    },
+                  }}
+                >
+                  <FullscreenIcon />
+                </IconButton>
+                
+                {/* Image counter */}
+                {car.images && car.images.length > 1 && (
+                  <Chip
+                    label={`${currentImageIndex + 1} / ${car.images.length}`}
+                    size="small"
+                    sx={{
+                      position: 'absolute',
+                      bottom: 16,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      bgcolor: 'rgba(0,0,0,0.7)',
+                      color: 'white',
+                      borderRadius: '6px', // Унифицируем радиус скругления
+                    }}
+                  />
+                )}
               </MainImageContainer>
               
               {/* Thumbnails */}
               {car.images && car.images.length > 1 && (
                 <ThumbsContainer>
-                  {car.images.map((img, index) => (
+                  {car.images.map((image, index) => (
                     <ThumbImage
                       key={index}
                       active={(index === currentImageIndex).toString()}
                       onClick={() => setCurrentImageIndex(index)}
                     >
-                      <Box
-                        component="img"
-                        src={img}
-                        alt={`Ferrari ${car.model} thumbnail ${index + 1}`}
-                        sx={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
+                      <img
+                        src={image}
+                        alt={`Thumbnail ${index+1}`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={(e) => {
-                          console.error(`Ошибка загрузки изображения: ${img}`);
                           e.target.src = '/images/car-placeholder.jpg';
                         }}
                       />
@@ -987,657 +1169,549 @@ const CarDetails = () => {
                 </ThumbsContainer>
               )}
             </Box>
-          </div>
+          </Grid>
           
-          {/* Call-to-action buttons */}
-          <div>
-            <Grid container spacing={2} sx={{ mb: 5 }}>
-              <Grid item xs={12} sm={6}>
-                <Button
-                  variant="contained"
+          {/* Quick info and actions */}
+          <Grid item xs={12} md={4}>
+            <StyledPaper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Ключевые характеристики
+              </Typography>
+              
+              <Box sx={{ my: 2 }}>
+                <Grid container spacing={2}>
+                  {car.engine && (
+                    <Grid item xs={6}>
+                      <CarIconWithText>
+                        <EngineIcon color="primary" sx={{ mb: 1, fontSize: 30 }} />
+                        <Typography variant="body2" color="text.secondary" align="center">
+                          Двигатель
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium" align="center">
+                          {car.engine}
+                        </Typography>
+                      </CarIconWithText>
+                    </Grid>
+                  )}
+                  
+                  {car.horsepower && (
+                    <Grid item xs={6}>
+                      <CarIconWithText>
+                        <SpeedIcon color="primary" sx={{ mb: 1, fontSize: 30 }} />
+                        <Typography variant="body2" color="text.secondary" align="center">
+                          Мощность
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium" align="center">
+                          {car.horsepower} л.с.
+                        </Typography>
+                      </CarIconWithText>
+                    </Grid>
+                  )}
+                  
+                  {car.acceleration && (
+                    <Grid item xs={6}>
+                      <CarIconWithText>
+                        <DirectionsCarIcon color="primary" sx={{ mb: 1, fontSize: 30 }} />
+                        <Typography variant="body2" color="text.secondary" align="center">
+                          Разгон
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium" align="center">
+                          {car.acceleration} сек
+                        </Typography>
+                      </CarIconWithText>
+                    </Grid>
+                  )}
+                  
+                  {car.maxSpeed && (
+                    <Grid item xs={6}>
+                      <CarIconWithText>
+                        <SpeedIcon color="primary" sx={{ mb: 1, fontSize: 30 }} />
+                        <Typography variant="body2" color="text.secondary" align="center">
+                          Макс. скорость
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium" align="center">
+                          {car.maxSpeed} км/ч
+                        </Typography>
+                      </CarIconWithText>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
+              
+              <Divider sx={{ my: 3, backgroundColor: 'rgba(255,255,255,0.1)' }} />
+              
+              {/* Actions buttons */}
+              <Stack spacing={2}>
+                <FerrariButton
                   fullWidth
+                  variant="contained"
                   size="large"
                   startIcon={<ShoppingCartIcon />}
-                  onClick={() => navigate(`/order/${car.id}`)}
-                  sx={{
-                    backgroundImage: 'linear-gradient(45deg, #FF2800 30%, #FF4D4D 90%)',
-                    color: 'white',
-                    py: 1.5,
-                    '&:hover': {
-                      boxShadow: '0 6px 20px rgba(255, 40, 0, 0.3)'
-                    }
-                  }}
+                  onClick={() => window.location.href = `mailto:sales@ld-dealership.com?subject=Запрос на покупку ${car.brand} ${car.model}&body=Здравствуйте! Я заинтересован в покупке ${car.brand} ${car.model} (ID: ${car.id}). Пожалуйста, свяжитесь со мной для уточнения деталей.`}
                 >
-                  Оформить заказ
-                </Button>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  size="large"
-                  startIcon={<EventAvailableIcon />}
-                  onClick={handleOpenTestDriveDialog}
-                  sx={{
-                    borderColor: '#FF2800',
-                    color: 'white',
-                    py: 1.5,
-                    '&:hover': {
-                      borderColor: '#FF2800',
-                      backgroundColor: 'rgba(255, 40, 0, 0.1)'
-                    }
-                  }}
-                >
-                  Записаться на тест-драйв
-                </Button>
-              </Grid>
-            </Grid>
-          </div>
-          
-          {/* Tabs navigation */}
-          <div>
-            <Box sx={{ borderBottom: 1, borderColor: 'rgba(255, 255, 255, 0.1)', mb: 3 }}>
-              <Tabs
-                value={currentTab}
-                onChange={handleTabChange}
-                variant="scrollable"
-                scrollButtons="auto"
-                TabIndicatorProps={{
-                  style: { backgroundColor: '#FF2800' }
-                }}
-              >
-                <StyledTab label="Описание" />
-                <StyledTab label="Характеристики" />
-                <StyledTab label="Комплектация" />
-                <StyledTab label="Отзывы" />
-              </Tabs>
-            </Box>
-          </div>
-          
-          {/* Tab content */}
-          <div>
-            {/* Description tab */}
-            {currentTab === 0 && (
-              <Box>
-                <Typography variant="h5" gutterBottom fontWeight="bold">
-                  Ferrari {car.model} {car.year}
-                </Typography>
+                  Запросить покупку
+                </FerrariButton>
                 
-                <Typography variant="body1" paragraph>
-                  {car.description || `Ferrari ${car.model} — это воплощение скорости, элегантности и инженерного превосходства. 
-                  Этот автомобиль создан для тех, кто ценит непревзойденное качество, итальянский стиль и высочайшие технологии в автомобилестроении.`}
-                </Typography>
-                
-                {/* Отображаем дополнительные блоки только если есть оновное описание - это баланс между информативностью и пустотой */}
-                {car.description && (
-                  <Grid container spacing={3} sx={{ mt: 3 }}>
-                    <Grid item xs={12} md={6}>
-                      <StyledPaper elevation={0} sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#FF2800' }}>
-                          Преимущества модели
-                        </Typography>
-                        <Box component="ul" sx={{ pl: 2 }}>
-                          {(car.features && Array.isArray(car.features) && car.features.length > 0) ? (
-                            // Если есть данные о преимуществах - используем их
-                            car.features.slice(0, 5).map((feature, index) => (
-                              <Typography key={index} component="li" variant="body1" paragraph>
-                                {feature}
-                              </Typography>
-                            ))
-                          ) : (
-                            // Иначе - показываем стандартные преимущества Ferrari
-                            <>
-                              <Typography component="li" variant="body1" paragraph>
-                                Великолепная динамика и потрясающий звук двигателя
-                              </Typography>
-                              <Typography component="li" variant="body1" paragraph>
-                                Эксклюзивный дизайн, приковывающий взгляды
-                              </Typography>
-                              <Typography component="li" variant="body1" paragraph>
-                                Высочайшее качество отделки салона
-                              </Typography>
-                              <Typography component="li" variant="body1" paragraph>
-                                Превосходная управляемость на любых скоростях
-                              </Typography>
-                              <Typography component="li" variant="body1" paragraph>
-                                Инновационные технологии для максимального комфорта и безопасности
-                              </Typography>
-                            </>
-                          )}
-                        </Box>
-                      </StyledPaper>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <StyledPaper elevation={0} sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#FF2800' }}>
-                          {car.history ? 'История автомобиля' : 'О модели'}
-                        </Typography>
-                        <Typography variant="body1" paragraph>
-                          {car.history || `Ferrari ${car.model} продолжает легендарную традицию итальянской марки, сочетая в себе инновационные технологии и характерный для Ferrari дизайн. Автомобиль разработан командой талантливых инженеров под руководством лучших мировых специалистов в области автомобилестроения.`}
-                        </Typography>
-                        {!car.history && (
-                          <Typography variant="body1">
-                            Каждый элемент автомобиля создан с особым вниманием к деталям, что делает Ferrari {car.model} настоящим произведением инженерного искусства.
-                          </Typography>
-                        )}
-                      </StyledPaper>
-                    </Grid>
-                  </Grid>
+                {car.testDriveAvailable && (
+                  <FerrariButton
+                    fullWidth
+                    variant="outlined"
+                    size="large"
+                    startIcon={<EventAvailableIcon />}
+                    onClick={handleOpenTestDriveDialog}
+                    sx={{
+                      color: 'white',
+                      borderColor: 'rgba(255,40,0,0.7)',
+                      '&:hover': {
+                        borderColor: '#FF2800',
+                        backgroundColor: 'rgba(255,40,0,0.1)',
+                      },
+                    }}
+                  >
+                    Записаться на тест-драйв
+                  </FerrariButton>
                 )}
-              </Box>
-            )}
-            
-            {/* Specifications tab */}
-            {currentTab === 1 && (
-              <Box>
-                <StyledTableContainer component={Paper} elevation={0}>
-                  <Table>
-                    <TableBody>
-                      {/* Базовая информация - всегда отображается */}
-                      <TableRow>
-                        <TableCell component="th" width="40%">Модель</TableCell>
-                        <TableCell>Ferrari {car.model}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell component="th">Год выпуска</TableCell>
-                        <TableCell>{car.year}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell component="th">VIN</TableCell>
-                        <TableCell>{car.vin}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell component="th">Категория</TableCell>
-                        <TableCell>
-                          {(() => {
-                            switch(car.category) {
-                              case 'sport': return 'Спортивный';
-                              case 'gt': return 'Grand Touring';
-                              case 'hypercar': return 'Гиперкар';
-                              case 'classic': return 'Классический';
-                              case 'limited_edition': return 'Лимитированная серия';
-                              default: return 'Спортивный';
-                            }
-                          })()}
-                        </TableCell>
-                      </TableRow>
-
-                      {/* Только если доступны соответствующие поля */}
-                      {car.specialSeries && (
-                        <TableRow>
-                          <TableCell component="th">Специальная серия</TableCell>
-                          <TableCell>{car.specialSeries}</TableCell>
-                        </TableRow>
+                
+                <Button
+                  fullWidth
+                  variant="text"
+                  size="large"
+                  onClick={() => setReviewDialogOpen(true)}
+                  startIcon={<RateReviewOutlinedIcon />}
+                  sx={{
+                    color: 'white',
+                    '&:hover': {
+                      color: '#FF2800',
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                    },
+                    borderRadius: '6px', // Унифицируем радиус скругления
+                  }}
+                >
+                  Оставить отзыв
+                </Button>
+              </Stack>
+              
+              {car.availableCount !== undefined && car.availableCount > 0 && (
+                <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <CheckCircleIcon sx={{ color: '#4CAF50', mr: 1 }} />
+                  <Typography variant="body2" color="#4CAF50">
+                    В наличии: {car.availableCount} шт.
+                  </Typography>
+                </Box>
+              )}
+              
+              {car.rentalAvailable && car.rentalPricePerDay && (
+                <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(255,40,0,0.1)', borderRadius: '6px', border: '1px dashed rgba(255,40,0,0.3)' }}>
+                  <Typography variant="subtitle2" align="center" gutterBottom>
+                    Доступна аренда
+                  </Typography>
+                  <Typography variant="h6" color="#FF2800" fontWeight="bold" align="center">
+                    от {formatPrice(car.rentalPricePerDay)}/день
+                  </Typography>
+                </Box>
+              )}
+            </StyledPaper>
+          </Grid>
+        </Grid>
+        
+        {/* Detailed info tabs */}
+        <Box sx={{ mt: 6 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs 
+              value={currentTab} 
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{ 
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#FF2800',
+                }
+              }}
+            >
+              <StyledTab label="Описание" />
+              <StyledTab label="Характеристики" />
+              <StyledTab label="Комплектация" />
+              <StyledTab label="Отзывы" />
+            </Tabs>
+          </Box>
+          
+          {/* Description tab */}
+          {currentTab === 0 && (
+            <Box sx={{ p: 3 }}>
+              <StyledPaper sx={{ p: 3 }}>
+                {car.description ? (
+                  <>
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+                      {car.description}
+                    </Typography>
+                    
+                    {car.history && (
+                      <Box sx={{ mt: 4 }}>
+                        <Typography variant="h6" gutterBottom>
+                          История автомобиля
+                        </Typography>
+                        <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+                          {car.history}
+                        </Typography>
+                      </Box>
+                    )}
+                  </>
+                ) : (
+                  <Typography variant="body1" sx={{ opacity: 0.7, fontStyle: 'italic' }}>
+                    Подробное описание данного автомобиля отсутствует.
+                  </Typography>
+                )}
+              </StyledPaper>
+            </Box>
+          )}
+          
+          {/* Specifications tab */}
+          {currentTab === 1 && (
+            <Box sx={{ p: 3 }}>
+              <StyledPaper sx={{ p: 3 }}>
+                {renderSpecifications()}
+              </StyledPaper>
+            </Box>
+          )}
+          
+          {/* Features tab */}
+          {currentTab === 2 && (
+            <Box sx={{ p: 3 }}>
+              <StyledPaper sx={{ p: 3 }}>
+                {car.exteriorColor && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Экстерьер
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <ColorLensIcon sx={{ mr: 1, color: 'rgba(255,255,255,0.6)' }} />
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                            Цвет кузова: {car.exteriorColor}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      {car.wheels && (
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <DirectionsCarIcon sx={{ mr: 1, color: 'rgba(255,255,255,0.6)' }} />
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                              Колеса: {car.wheels}
+                            </Typography>
+                          </Box>
+                        </Grid>
                       )}
-                      {car.mileage !== null && car.mileage !== undefined && (
-                        <TableRow>
-                          <TableCell component="th">Пробег</TableCell>
-                          <TableCell>{car.mileage.toLocaleString()} км</TableCell>
-                        </TableRow>
-                      )}
-                      {car.engine && (
-                        <TableRow>
-                          <TableCell component="th">Двигатель</TableCell>
-                          <TableCell>{car.engine}</TableCell>
-                        </TableRow>
-                      )}
-                      {car.horsepower && (
-                        <TableRow>
-                          <TableCell component="th">Мощность</TableCell>
-                          <TableCell>{car.horsepower} л.с.</TableCell>
-                        </TableRow>
-                      )}
-                      {car.acceleration && (
-                        <TableRow>
-                          <TableCell component="th">Разгон до 100 км/ч</TableCell>
-                          <TableCell>{car.acceleration} сек.</TableCell>
-                        </TableRow>
-                      )}
-                      {car.maxSpeed && (
-                        <TableRow>
-                          <TableCell component="th">Максимальная скорость</TableCell>
-                          <TableCell>{car.maxSpeed} км/ч</TableCell>
-                        </TableRow>
-                      )}
-                      {car.transmission && (
-                        <TableRow>
-                          <TableCell component="th">Трансмиссия</TableCell>
-                          <TableCell>{car.transmission}</TableCell>
-                        </TableRow>
-                      )}
-                      {car.driveType && (
-                        <TableRow>
-                          <TableCell component="th">Привод</TableCell>
-                          <TableCell>{car.driveType}</TableCell>
-                        </TableRow>
-                      )}
-                      {car.fuelConsumption && (
-                        <TableRow>
-                          <TableCell component="th">Расход топлива (комбинированный)</TableCell>
-                          <TableCell>{car.fuelConsumption} л/100 км</TableCell>
-                        </TableRow>
-                      )}
-                      {car.fuelType && (
-                        <TableRow>
-                          <TableCell component="th">Тип топлива</TableCell>
-                          <TableCell>{car.fuelType}</TableCell>
-                        </TableRow>
-                      )}
-                      {car.exteriorColor && (
-                        <TableRow>
-                          <TableCell component="th">Цвет кузова</TableCell>
-                          <TableCell>{car.exteriorColor}</TableCell>
-                        </TableRow>
-                      )}
+                    </Grid>
+                  </Box>
+                )}
+                
+                {(car.interiorColor || car.interiorMaterial) && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Интерьер
+                    </Typography>
+                    <Grid container spacing={2}>
                       {car.interiorColor && (
-                        <TableRow>
-                          <TableCell component="th">Цвет салона</TableCell>
-                          <TableCell>{car.interiorColor}</TableCell>
-                        </TableRow>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <ColorLensIcon sx={{ mr: 1, color: 'rgba(255,255,255,0.6)' }} />
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                              Цвет салона: {car.interiorColor}
+                            </Typography>
+                          </Box>
+                        </Grid>
                       )}
                       {car.interiorMaterial && (
-                        <TableRow>
-                          <TableCell component="th">Материал отделки салона</TableCell>
-                          <TableCell>{car.interiorMaterial}</TableCell>
-                        </TableRow>
+                        <Grid item xs={12} sm={6}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <ColorLensIcon sx={{ mr: 1, color: 'rgba(255,255,255,0.6)' }} />
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                              Материал отделки: {car.interiorMaterial}
+                            </Typography>
+                          </Box>
+                        </Grid>
                       )}
-                      {car.wheels && (
-                        <TableRow>
-                          <TableCell component="th">Колесные диски</TableCell>
-                          <TableCell>{car.wheels}</TableCell>
-                        </TableRow>
-                      )}
-                      {car.carbonCeramic && (
-                        <TableRow>
-                          <TableCell component="th">Карбон-керамические тормоза</TableCell>
-                          <TableCell>Да</TableCell>
-                        </TableRow>
-                      )}
-                      {car.certificateOfAuthenticity && (
-                        <TableRow>
-                          <TableCell component="th">Сертификат подлинности</TableCell>
-                          <TableCell>Да</TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </StyledTableContainer>
-              </Box>
-            )}
-            
-            {/* Features tab */}
-            {currentTab === 2 && (
-              <Box>
-                {car.features && Array.isArray(car.features) && car.features.length > 0 ? (
-                  // Если есть данные о комплектации - используем их
-                  <Grid container spacing={3}>
-                    {/* Группируем features на категории по 6-8 штук в каждой */}
-                    <Grid item xs={12} md={6} lg={4}>
-                      <StyledPaper elevation={0} sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#FF2800' }}>
-                          Экстерьер и шасси
-                        </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          {car.features.filter(f => 
-                            f.toLowerCase().includes('фар') || 
-                            f.toLowerCase().includes('диск') || 
-                            f.toLowerCase().includes('шин') || 
-                            f.toLowerCase().includes('карбон') ||
-                            f.toLowerCase().includes('тормоз') ||
-                            f.toLowerCase().includes('крыш') ||
-                            f.toLowerCase().includes('аэродинам')
-                          ).map((feature, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <CheckCircleIcon sx={{ mr: 1, color: '#FF2800' }} />
-                              <Typography>{feature}</Typography>
-                            </Box>
-                          ))}
-                        </Box>
-                      </StyledPaper>
                     </Grid>
-                    
-                    <Grid item xs={12} md={6} lg={4}>
-                      <StyledPaper elevation={0} sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#FF2800' }}>
-                          Интерьер и комфорт
-                        </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          {car.features.filter(f => 
-                            f.toLowerCase().includes('сиден') || 
-                            f.toLowerCase().includes('кож') || 
-                            f.toLowerCase().includes('климат') || 
-                            f.toLowerCase().includes('мультимедиа') ||
-                            f.toLowerCase().includes('аудио') ||
-                            f.toLowerCase().includes('подогрев') ||
-                            f.toLowerCase().includes('вентиляц')
-                          ).map((feature, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <CheckCircleIcon sx={{ mr: 1, color: '#FF2800' }} />
-                              <Typography>{feature}</Typography>
-                            </Box>
-                          ))}
-                        </Box>
-                      </StyledPaper>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6} lg={4}>
-                      <StyledPaper elevation={0} sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#FF2800' }}>
-                          Технологии и безопасность
-                        </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          {car.features.filter(f => 
-                            f.toLowerCase().includes('система') || 
-                            f.toLowerCase().includes('безопасност') || 
-                            f.toLowerCase().includes('датчик') || 
-                            f.toLowerCase().includes('ассистент') ||
-                            f.toLowerCase().includes('электр') ||
-                            f.toLowerCase().includes('bluetooth') ||
-                            f.toLowerCase().includes('навигац')
-                          ).map((feature, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <CheckCircleIcon sx={{ mr: 1, color: '#FF2800' }} />
-                              <Typography>{feature}</Typography>
-                            </Box>
-                          ))}
-                        </Box>
-                      </StyledPaper>
-                    </Grid>
-                  </Grid>
-                ) : (
-                  // Иначе - показываем стандартную комплектацию для Ferrari
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6} lg={4}>
-                      <StyledPaper elevation={0} sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#FF2800' }}>
-                          Экстерьер
-                        </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          {['LED-фары', 'Аэродинамический обвес', 'Карбоновая крыша', 
-                            'Спортивный диффузор', '20" легкосплавные диски',
-                            'Карбон-керамические тормоза'].map((feature, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <CheckCircleIcon sx={{ mr: 1, color: '#FF2800' }} />
-                              <Typography>{feature}</Typography>
-                            </Box>
-                          ))}
-                        </Box>
-                      </StyledPaper>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6} lg={4}>
-                      <StyledPaper elevation={0} sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#FF2800' }}>
-                          Интерьер
-                        </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          {['Спортивные сиденья с электрорегулировкой', 
-                            'Отделка салона кожей и алькантарой', 
-                            'Карбоновые вставки в интерьере', 
-                            'Мультифункциональное рулевое колесо',
-                            'Система бесключевого доступа',
-                            'Климат-контроль'].map((feature, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <CheckCircleIcon sx={{ mr: 1, color: '#FF2800' }} />
-                              <Typography>{feature}</Typography>
-                            </Box>
-                          ))}
-                        </Box>
-                      </StyledPaper>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6} lg={4}>
-                      <StyledPaper elevation={0} sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ color: '#FF2800' }}>
-                          Технологии
-                        </Typography>
-                        <Box sx={{ mt: 2 }}>
-                          {['Система управления режимами движения', 
-                            'Адаптивная подвеска', 
-                            'Спортивный выхлоп с регулировкой звука', 
-                            'Цифровая приборная панель',
-                            'Мультимедийная система с Apple CarPlay',
-                            'Премиальная аудиосистема'].map((feature, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                              <CheckCircleIcon sx={{ mr: 1, color: '#FF2800' }} />
-                              <Typography>{feature}</Typography>
-                            </Box>
-                          ))}
-                        </Box>
-                      </StyledPaper>
-                    </Grid>
-                  </Grid>
+                  </Box>
                 )}
-              </Box>
-            )}
-            
-            {/* Reviews tab */}
-            {currentTab === 3 && (
-              <Box>
-                {reviews && reviews.length > 0 ? (
+                
+                {car.features && car.features.length > 0 ? (
                   <Box>
-                    {reviews.map((review, index) => (
-                      <StyledPaper key={index} elevation={0} sx={{ p: 3, mb: 3 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Box
-                              sx={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: '50%',
-                                backgroundColor: 'rgba(255, 40, 0, 0.2)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                mr: 2
-                              }}
-                            >
-                              <Typography variant="h6">{review.userName?.charAt(0).toUpperCase() || 'A'}</Typography>
-                            </Box>
-                            <Box>
-                              <Typography variant="h6">{review.userName || 'Анонимный пользователь'}</Typography>
-                              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                                {new Date(review.createdAt).toLocaleDateString('ru-RU')}
-                              </Typography>
-                            </Box>
-                          </Box>
-                          
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            {[...Array(5)].map((_, i) => (
-                              <StarIcon
-                                key={i}
-                                sx={{
-                                  color: i < review.rating ? '#FFD700' : 'rgba(255, 255, 255, 0.3)',
-                                  fontSize: '1.2rem'
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-                        
-                        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 2 }} />
-                        
-                        <Typography variant="body1" paragraph>
-                          {review.comment}
-                        </Typography>
-                        
-                        {review.pros && (
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="subtitle2" sx={{ color: '#4CAF50', mb: 1 }}>
-                              Достоинства:
-                            </Typography>
-                            <Typography variant="body2">
-                              {review.pros}
-                            </Typography>
-                          </Box>
-                        )}
-                        
-                        {review.cons && (
-                          <Box>
-                            <Typography variant="subtitle2" sx={{ color: '#FF5252', mb: 1 }}>
-                              Недостатки:
-                            </Typography>
-                            <Typography variant="body2">
-                              {review.cons}
-                            </Typography>
-                          </Box>
-                        )}
-                      </StyledPaper>
-                    ))}
+                    <Typography variant="subtitle1" gutterBottom>
+                      Опции и особенности
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {car.features.map((feature, index) => (
+                        <FeatureChip 
+                          key={index} 
+                          label={feature} 
+                          icon={<CheckCircleIcon />}
+                        />
+                      ))}
+                    </Box>
                   </Box>
                 ) : (
-                  <StyledPaper elevation={0} sx={{ p: 4, textAlign: 'center' }}>
-                    <RateReviewOutlinedIcon sx={{ fontSize: 60, color: 'rgba(255, 40, 0, 0.7)', mb: 2 }} />
-                    <Typography variant="h6" gutterBottom>
-                      Отзывов пока нет
-                    </Typography>
-                    <Typography variant="body1" paragraph color="text.secondary">
-                      Будьте первым, кто оставит отзыв об этом автомобиле!
-                    </Typography>
-                    <Button 
-                      variant="outlined" 
-                      startIcon={<AddCommentIcon />}
-                      onClick={() => setReviewDialogOpen(true)}
-                      sx={{
-                        mt: 2,
-                        color: '#FF2800',
-                        borderColor: '#FF2800',
-                        '&:hover': {
-                          borderColor: '#FF2800',
-                          backgroundColor: 'rgba(255, 40, 0, 0.05)',
-                        }
-                      }}
-                    >
-                      Написать отзыв
-                    </Button>
-                  </StyledPaper>
+                  <Typography variant="body1" sx={{ opacity: 0.7, fontStyle: 'italic' }}>
+                    Информация о комплектации отсутствует.
+                  </Typography>
                 )}
-              </Box>
-            )}
-          </div>
+              </StyledPaper>
+            </Box>
+          )}
           
-          {/* Similar cars section */}
-          {similarCars.length > 0 && (
-            <div>
-              <Box sx={{ mt: 8 }}>
-                <Typography variant="h5" gutterBottom fontWeight="bold">
-                  Похожие автомобили
-                </Typography>
+          {/* Reviews tab */}
+          {currentTab === 3 && (
+            <Box sx={{ p: 3 }}>
+              <StyledPaper sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                  <Typography variant="h6">
+                    Отзывы клиентов
+                  </Typography>
+                  <Button
+                    startIcon={<AddCommentIcon />}
+                    onClick={() => setReviewDialogOpen(true)}
+                    sx={{
+                      color: 'white',
+                      borderRadius: '6px', // Унифицируем радиус скругления
+                      '&:hover': {
+                        color: '#FF2800',
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                      },
+                    }}
+                  >
+                    Оставить отзыв
+                  </Button>
+                </Box>
                 
-                <Grid container spacing={3} sx={{ mt: 2 }}>
-                  {similarCars.map((similarCar) => (
-                    <Grid item xs={12} sm={6} md={3} key={similarCar.id}>
-                      <StyledPaper
-                        elevation={0}
-                        sx={{
-                          cursor: 'pointer',
-                          '&:hover': {
-                            transform: 'translateY(-8px)',
-                          }
-                        }}
-                        onClick={() => navigate(`/cars/${similarCar.id}`)}
-                      >
-                        <Box
-                          sx={{
-                            height: 180,
-                            overflow: 'hidden',
-                            borderTopLeftRadius: '12px',
-                            borderTopRightRadius: '12px',
-                          }}
-                        >
-                          <Box
-                            component="img"
-                            src={similarCar.mainImage || (similarCar.images && similarCar.images.length > 0 
-                              ? similarCar.images[0] 
-                              : 'https://via.placeholder.com/300x200?text=Ferrari')}
-                            alt={`${similarCar.brand} ${similarCar.model}`}
-                            onError={(e) => {
-                              console.log('Ошибка загрузки изображения:', e.target.src);
-                              e.target.src = 'https://via.placeholder.com/300x200?text=Ferrari';
-                            }}
-                            sx={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                              transition: 'transform 0.3s ease',
-                              '&:hover': {
-                                transform: 'scale(1.05)',
-                              }
-                            }}
+                {reviews.length > 0 ? (
+                  <Stack spacing={3}>
+                    {reviews.map((review, index) => (
+                      <Box key={index} sx={{ 
+                        p: 2, 
+                        borderRadius: '8px', 
+                        bgcolor: 'rgba(255,255,255,0.05)', 
+                        border: '1px solid rgba(255,255,255,0.1)' 
+                      }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                          <Typography variant="subtitle1" fontWeight="medium">
+                            {review.userName || 'Клиент'}
+                          </Typography>
+                          <Rating 
+                            value={review.rating} 
+                            readOnly 
+                            size="small"
+                            sx={{ color: '#FFD700' }}
                           />
                         </Box>
                         
-                        <Box sx={{ p: 2 }}>
-                          <Typography variant="h6" gutterBottom>
-                            {similarCar.brand} {similarCar.model}
-                          </Typography>
-                          
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                              {similarCar.year} · {similarCar.mileage ? `${similarCar.mileage.toLocaleString()} км` : 'Новый'}
-                            </Typography>
+                        <Typography variant="body2" sx={{ mb: 2, whiteSpace: 'pre-line' }}>
+                          {review.comment}
+                        </Typography>
+                        
+                        {(review.pros || review.cons) && (
+                          <Grid container spacing={2}>
+                            {review.pros && (
+                              <Grid item xs={12} sm={6}>
+                                <Typography variant="caption" color="#4CAF50" gutterBottom>
+                                  Достоинства:
+                                </Typography>
+                                <Typography variant="body2">
+                                  {review.pros}
+                                </Typography>
+                              </Grid>
+                            )}
                             
-                            <Typography variant="subtitle1" sx={{ color: '#FF2800', fontWeight: 'bold' }}>
-                              {formatPrice(similarCar.price)}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </StyledPaper>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            </div>
+                            {review.cons && (
+                              <Grid item xs={12} sm={6}>
+                                <Typography variant="caption" color="#FF5252" gutterBottom>
+                                  Недостатки:
+                                </Typography>
+                                <Typography variant="body2">
+                                  {review.cons}
+                                </Typography>
+                              </Grid>
+                            )}
+                          </Grid>
+                        )}
+                        
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                          {new Date(review.createdAt).toLocaleDateString('ru-RU')}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <RateReviewOutlinedIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.2)', mb: 2 }} />
+                    <Typography variant="body1" color="text.secondary">
+                      Отзывов пока нет. Будьте первым, кто оставит отзыв!
+                    </Typography>
+                  </Box>
+                )}
+              </StyledPaper>
+            </Box>
           )}
-        </div>
+        </Box>
+        
+        {/* Similar cars section */}
+        {similarCars.length > 0 && (
+          <Box sx={{ mt: 6 }}>
+            <Typography variant="h5" gutterBottom>
+              Похожие автомобили
+            </Typography>
+            <Grid container spacing={3}>
+              {similarCars.map((similarCar) => (
+                <Grid item xs={12} sm={6} md={3} key={similarCar.id}>
+                  <StyledPaper 
+                    component={Link} 
+                    to={`/car/${similarCar.id}`}
+                    sx={{ 
+                      p: 0, 
+                      display: 'block', 
+                      textDecoration: 'none',
+                      color: 'inherit'
+                    }}
+                  >
+                    <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
+                      <Box 
+                        component="img"
+                        src={similarCar.mainImage || (similarCar.images && similarCar.images.length > 0 ? similarCar.images[0] : '/images/car-placeholder.jpg')}
+                        alt={`${similarCar.brand} ${similarCar.model}`}
+                        onError={(e) => {
+                          e.target.src = '/images/car-placeholder.jpg';
+                        }}
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ p: 2 }}>
+                      <Typography variant="h6" sx={{ mb: 1 }}>
+                        {similarCar.brand} {similarCar.model}
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {similarCar.year} • {similarCar.mileage ? `${similarCar.mileage.toLocaleString()} км` : 'Новый'}
+                        </Typography>
+                        <Typography variant="subtitle2" color="#FF2800" fontWeight="bold">
+                          {formatPrice(similarCar.price)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </StyledPaper>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
       </Container>
       
-      {/* Full image dialog */}
+      {/* Full-size image viewer dialog */}
       <Dialog
         open={openFullImage}
         onClose={() => setOpenFullImage(false)}
-        maxWidth="lg"
-        PaperProps={{
-          sx: {
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
-            borderRadius: '12px',
-          }
-        }}
+        maxWidth="xl"
+        fullWidth
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography>Ferrari {car.model} {car.year}</Typography>
-          <IconButton onClick={() => setOpenFullImage(false)} sx={{ color: 'white' }}>
+        <DialogContent 
+          sx={{ 
+            p: 0, 
+            bgcolor: 'black',
+            position: 'relative', 
+            height: '80vh', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center' 
+          }}
+        >
+          {car.images && car.images.length > 0 && (
+            <img
+              src={car.images[currentImageIndex]}
+              alt={`${car.brand} ${car.model} - фото ${currentImageIndex + 1}`}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain',
+              }}
+              onError={(e) => {
+                e.target.src = '/images/car-placeholder.jpg';
+              }}
+            />
+          )}
+          
+          <IconButton
+            onClick={() => setOpenFullImage(false)}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'white',
+              bgcolor: 'rgba(0,0,0,0.5)',
+              '&:hover': {
+                bgcolor: 'rgba(255,40,0,0.7)',
+              },
+            }}
+          >
             <Close />
           </IconButton>
-        </DialogTitle>
-        
-        <DialogContent>
-          <Box
-            component="img"
-            src={car.images[currentImageIndex] || '/images/car-placeholder.jpg'}
-            alt={`Ferrari ${car.model}`}
-            sx={{
-              width: '100%',
-              maxHeight: '80vh',
-              objectFit: 'contain',
-            }}
-          />
           
           {car.images && car.images.length > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <IconButton onClick={handlePrevImage} sx={{ color: 'white' }}>
-                <ArrowBackIcon />
+            <>
+              <IconButton
+                onClick={handlePrevImage}
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: 16,
+                  transform: 'translateY(-50%)',
+                  color: 'white',
+                  bgcolor: 'rgba(0,0,0,0.5)',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,40,0,0.7)',
+                  },
+                }}
+              >
+                <ArrowBackIosIcon />
               </IconButton>
-              <Typography sx={{ mx: 2, alignSelf: 'center' }}>
-                {currentImageIndex + 1} / {car.images.length}
-              </Typography>
-              <IconButton onClick={handleNextImage} sx={{ color: 'white' }}>
-                <ArrowForwardIcon />
+              
+              <IconButton
+                onClick={handleNextImage}
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: 16,
+                  transform: 'translateY(-50%)',
+                  color: 'white',
+                  bgcolor: 'rgba(0,0,0,0.5)',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,40,0,0.7)',
+                  },
+                }}
+              >
+                <ArrowForwardIosIcon />
               </IconButton>
-            </Box>
+              
+              <Chip
+                label={`${currentImageIndex + 1} / ${car.images.length}`}
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  bottom: 16,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  bgcolor: 'rgba(0,0,0,0.7)',
+                  color: 'white',
+                  borderRadius: '6px', // Унифицируем радиус скругления
+                }}
+              />
+            </>
           )}
         </DialogContent>
       </Dialog>
@@ -1650,18 +1724,16 @@ const CarDetails = () => {
         fullWidth
         PaperProps={{
           sx: {
-            backgroundColor: 'rgba(25, 25, 25, 0.9)',
-            backdropFilter: 'blur(10px)',
+            bgcolor: '#1a1a1a',
             color: 'white',
-            borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '8px', // Унифицируем радиус скругления
           }
         }}
       >
         <DialogTitle>
           <Typography variant="h5">Запись на тест-драйв</Typography>
           <Typography variant="subtitle1" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 1 }}>
-            Ferrari {car.model} {car.year}
+            {car.brand} {car.model} {car.year}
           </Typography>
         </DialogTitle>
         
@@ -1881,8 +1953,11 @@ const CarDetails = () => {
                 SelectProps={{
                   native: true,
                 }}
+                disabled={slotLoading}
               >
-                <option value="" disabled>Выберите время</option>
+                <option value="" disabled>
+                  {slotLoading ? 'Загрузка доступных слотов...' : 'Выберите время'}
+                </option>
                 {availableSlots.length > 0 ? (
                   availableSlots.map((slot) => (
                     <option key={slot} value={slot}>
@@ -1894,7 +1969,6 @@ const CarDetails = () => {
                     <option value="10:00">10:00</option>
                     <option value="11:00">11:00</option>
                     <option value="12:00">12:00</option>
-                    <option value="13:00">13:00</option>
                     <option value="14:00">14:00</option>
                     <option value="15:00">15:00</option>
                     <option value="16:00">16:00</option>
@@ -1903,6 +1977,14 @@ const CarDetails = () => {
                   </>
                 )}
               </TextField>
+              {slotLoading && (
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                  <CircularProgress size={16} sx={{ color: '#FF2800', mr: 1 }} />
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Загрузка доступных слотов...
+                  </Typography>
+                </Box>
+              )}
             </Grid>
             
             <Grid item xs={12}>
@@ -1954,7 +2036,7 @@ const CarDetails = () => {
           
           <Button 
             onClick={handleSubmitTestDrive}
-            disabled={submitting}
+            disabled={submitting || slotLoading}
             variant="contained"
             sx={{ 
               backgroundImage: 'linear-gradient(45deg, #FF2800 30%, #FF4D4D 90%)',
@@ -1969,9 +2051,21 @@ const CarDetails = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Добавим диалог для отправки отзыва */}
-      <Dialog open={reviewDialogOpen} onClose={() => setReviewDialogOpen(false)} maxWidth="md" fullWidth>
+      
+      {/* Review dialog */}
+      <Dialog 
+        open={reviewDialogOpen} 
+        onClose={() => setReviewDialogOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: '#1a1a1a',
+            color: 'white',
+            borderRadius: '8px', // Унифицируем радиус скругления
+          }
+        }}
+      >
         <DialogTitle sx={{ bgcolor: '#1a1a1a', color: 'white' }}>
           Оставить отзыв о Ferrari {car.model}
         </DialogTitle>

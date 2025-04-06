@@ -1,170 +1,164 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { authAPI, userAPI } from '../services/api';
+import axios from 'axios';
+import { API_URL } from '../config';
 
 // Создаем контекст авторизации
-export const AuthContext = createContext(null);
+const AuthContext = createContext(null);
 
 // Хук для использования контекста авторизации
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth должен использоваться внутри AuthProvider');
   }
   return context;
 };
 
 // Провайдер авторизации
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Загрузка данных пользователя при монтировании компонента
+  // Проверка авторизации при загрузке
   useEffect(() => {
-    const loadUser = async () => {
+    const checkAuth = async () => {
       const token = localStorage.getItem('token');
-      if (token) {
+      const userData = localStorage.getItem('user');
+      
+      if (token && userData) {
         try {
-          // Пытаемся загрузить данные текущего пользователя
-          const response = await userAPI.getCurrentUser();
-          setCurrentUser(response.data);
+          // Используем данные из localStorage вместо запроса к API
+          setUser(JSON.parse(userData));
           setIsAuthenticated(true);
-        } catch (err) {
-          console.error('Error loading user:', err);
-          // Если токен недействителен, очищаем локальное хранилище
+          console.log('Данные пользователя загружены из localStorage:', JSON.parse(userData));
+        } catch (error) {
+          console.error('Ошибка при обработке данных пользователя:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          setUser(null);
           setIsAuthenticated(false);
         }
       }
       setLoading(false);
     };
 
-    loadUser();
+    checkAuth();
   }, []);
 
-  // Авторизация пользователя
-  const login = async (credentials) => {
-    setLoading(true);
-    setError(null);
+  // Функция авторизации
+  const login = async (email, password) => {
     try {
-      const response = await authAPI.login(credentials);
+      setLoading(true);
+      setError(null);
+      
+      // Используем существующий маршрут для входа
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
       const { token, user } = response.data;
       
-      // Сохраняем токен и данные пользователя
+      // Сохраняем токен и информацию о пользователе
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       
-      setCurrentUser(user);
+      // Устанавливаем состояние пользователя
+      setUser(user);
       setIsAuthenticated(true);
+      
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('Ошибка авторизации:', error);
+      setError(error.response?.data?.message || 'Ошибка входа');
+      return { success: false, error: error.response?.data?.message || 'Ошибка входа' };
+    } finally {
       setLoading(false);
-      return { success: true, user };
-    } catch (err) {
-      setLoading(false);
-      const errorMessage = err.response?.data?.message || 'Ошибка при входе. Пожалуйста, попробуйте снова.';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
     }
   };
 
-  // Регистрация нового пользователя
+  // Функция регистрации
   const register = async (userData) => {
-    setLoading(true);
-    setError(null);
     try {
-      const response = await authAPI.register(userData);
-      const { token, user } = response.data;
+      setLoading(true);
+      setError(null);
       
-      // Сохраняем токен и данные пользователя
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      setCurrentUser(user);
-      setIsAuthenticated(true);
+      const response = await axios.post(`${API_URL}/auth/register`, userData);
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('Ошибка регистрации:', error);
+      setError(error.response?.data?.message || 'Ошибка регистрации');
+      return { success: false, error: error.response?.data?.message || 'Ошибка регистрации' };
+    } finally {
       setLoading(false);
-      return { success: true, user };
-    } catch (err) {
-      setLoading(false);
-      const errorMessage = err.response?.data?.message || 'Ошибка при регистрации. Пожалуйста, попробуйте снова.';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
     }
   };
 
-  // Выход из системы
-  const logout = (callback) => {
+  // Функция выхода
+  const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setCurrentUser(null);
+    setUser(null);
     setIsAuthenticated(false);
-    
-    // Вместо прямой навигации используем callback, если он предоставлен
-    if (callback && typeof callback === 'function') {
-      callback();
-    }
   };
 
   // Обновление данных пользователя
   const updateUserProfile = async (userData) => {
-    setLoading(true);
-    setError(null);
     try {
-      const response = await userAPI.updateUser(currentUser.id, userData);
-      const updatedUser = response.data;
+      setLoading(true);
       
-      // Обновляем данные пользователя в localStorage и состоянии
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`${API_URL}/users/profile`, userData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data' 
+        }
+      });
+      
+      // Обновляем данные пользователя
+      const updatedUser = response.data.user || response.data;
+      
+      // Сохраняем обновленные данные в localStorage
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      setCurrentUser(updatedUser);
+      
+      // Обновляем состояние
+      setUser(updatedUser);
+      
+      return { success: true, data: updatedUser };
+    } catch (error) {
+      console.error('Ошибка обновления профиля:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Ошибка обновления профиля' 
+      };
+    } finally {
       setLoading(false);
-      return { success: true, user: updatedUser };
-    } catch (err) {
-      setLoading(false);
-      const errorMessage = err.response?.data?.message || 'Ошибка при обновлении профиля. Пожалуйста, попробуйте снова.';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    }
-  };
-
-  // Изменение пароля
-  const changePassword = async (passwordData) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await authAPI.changePassword(passwordData);
-      setLoading(false);
-      return { success: true };
-    } catch (err) {
-      setLoading(false);
-      const errorMessage = err.response?.data?.message || 'Ошибка при изменении пароля. Пожалуйста, попробуйте снова.';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
     }
   };
 
   // Проверка, является ли пользователь администратором
   const isAdmin = () => {
-    return currentUser?.role === 'admin';
+    return user?.role === 'admin';
   };
 
   // Проверка, является ли пользователь менеджером
   const isManager = () => {
-    return currentUser?.role === 'manager' || currentUser?.role === 'admin';
+    return user?.role === 'manager' || user?.role === 'admin';
   };
 
   // Проверка, является ли пользователь VIP-клиентом
   const isVIP = () => {
-    return currentUser?.vipStatus === true;
+    return user?.vipStatus === true;
   };
 
   // Обновляем данные пользователя после внешних изменений (например, после изменения профиля)
   const refreshUserData = async () => {
     try {
-      const response = await userAPI.getCurrentUser();
+      const response = await axios.get(`${API_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       const updatedUser = response.data;
       
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      setCurrentUser(updatedUser);
+      setUser(updatedUser);
       return { success: true, user: updatedUser };
     } catch (err) {
       console.error('Error refreshing user data:', err);
@@ -175,7 +169,9 @@ export const AuthProvider = ({ children }) => {
   // Добавление предпочтений по моделям автомобилей
   const addCarPreference = async (preference) => {
     try {
-      await userAPI.addCarPreference(preference);
+      await axios.post(`${API_URL}/users/preferences`, { preference }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       // Обновляем данные пользователя
       return await refreshUserData();
     } catch (err) {
@@ -187,7 +183,9 @@ export const AuthProvider = ({ children }) => {
   // Удаление предпочтений по моделям автомобилей
   const removeCarPreference = async (preference) => {
     try {
-      await userAPI.removeCarPreference(preference);
+      await axios.delete(`${API_URL}/users/preferences/${preference}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       // Обновляем данные пользователя
       return await refreshUserData();
     } catch (err) {
@@ -198,15 +196,14 @@ export const AuthProvider = ({ children }) => {
 
   // Значение контекста, которое будет доступно потребителям
   const value = {
-    currentUser,
+    user,
+    isAuthenticated,
     loading,
     error,
-    isAuthenticated,
     login,
     register,
     logout,
     updateUserProfile,
-    changePassword,
     isAdmin,
     isManager,
     isVIP,

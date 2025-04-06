@@ -50,6 +50,24 @@ const CAR_CATEGORIES = [
   { value: "limited_edition", label: "Limited Edition" },
 ];
 
+// Популярные марки автомобилей (премиум-сегмент)
+const CAR_BRANDS = [
+  { value: "Ferrari", label: "Ferrari" },
+  { value: "Lamborghini", label: "Lamborghini" },
+  { value: "Porsche", label: "Porsche" },
+  { value: "Aston Martin", label: "Aston Martin" },
+  { value: "Bentley", label: "Bentley" },
+  { value: "Rolls-Royce", label: "Rolls-Royce" },
+  { value: "Bugatti", label: "Bugatti" },
+  { value: "Maserati", label: "Maserati" },
+  { value: "McLaren", label: "McLaren" },
+  { value: "Mercedes-Benz", label: "Mercedes-Benz" },
+  { value: "BMW", label: "BMW" },
+  { value: "Audi", label: "Audi" },
+  { value: "Jaguar", label: "Jaguar" },
+  { value: "Tesla", label: "Tesla" },
+];
+
 // Типы трансмиссий
 const TRANSMISSION_TYPES = [
   { value: "Автоматическая", label: "Автоматическая" },
@@ -77,7 +95,7 @@ const EditCarDialog = ({ open, onClose, car, onSave, isLoading = false }) => {
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   const [formData, setFormData] = useState({
-    brand: "Ferrari",
+    brand: "",
     model: "",
     year: new Date().getFullYear(),
     price: "",
@@ -464,16 +482,43 @@ const EditCarDialog = ({ open, onClose, car, onSave, isLoading = false }) => {
           {tabIndex === 0 && (
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Марка"
-                  name="brand"
-                  value={formData.brand}
-                  onChange={handleChange}
-                  required
-                  disabled
-                />
+                <FormControl fullWidth required>
+                  <InputLabel>Марка</InputLabel>
+                  <Select
+                    name="brand"
+                    value={formData.brand}
+                    onChange={handleChange}
+                    label="Марка"
+                  >
+                    {CAR_BRANDS.map((brand) => (
+                      <MenuItem key={brand.value} value={brand.value}>
+                        {brand.label}
+                      </MenuItem>
+                    ))}
+                    <MenuItem value="other">Другая марка</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
+              
+              {formData.brand === "other" && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Ввести марку вручную"
+                    name="customBrand"
+                    value={formData.customBrand || ""}
+                    onChange={(e) => {
+                      const { value } = e.target;
+                      setFormData({
+                        ...formData,
+                        brand: value, // Записываем значение напрямую в brand
+                        customBrand: value // Сохраняем для поля ввода
+                      });
+                    }}
+                    required
+                  />
+                </Grid>
+              )}
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth

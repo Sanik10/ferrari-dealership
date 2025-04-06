@@ -212,13 +212,18 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
           sx={{
-            bgcolor: 'rgba(0,0,0,0.6)',
+            bgcolor: 'rgba(40, 40, 40, 0.7)',
             color: 'white',
-            '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+            '&:hover': { 
+              bgcolor: 'rgba(255, 40, 0, 0.8)',
+              transform: 'scale(1.1)'
+            },
             opacity: hovered ? 1 : 0,
-            transition: 'opacity 0.3s ease',
+            transition: 'all 0.3s ease',
             zIndex: 30,
-            pointerEvents: 'auto' // Восстанавливаем обработку кликов для кнопки
+            pointerEvents: 'auto', // Восстанавливаем обработку кликов для кнопки
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(4px)'
           }}
           size="small"
         >
@@ -230,18 +235,123 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
           sx={{
-            bgcolor: 'rgba(0,0,0,0.6)',
+            bgcolor: 'rgba(40, 40, 40, 0.7)',
             color: 'white',
-            '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+            '&:hover': { 
+              bgcolor: 'rgba(255, 40, 0, 0.8)',
+              transform: 'scale(1.1)'
+            },
             opacity: hovered ? 1 : 0,
-            transition: 'opacity 0.3s ease',
+            transition: 'all 0.3s ease',
             zIndex: 30,
-            pointerEvents: 'auto' // Восстанавливаем обработку кликов для кнопки
+            pointerEvents: 'auto', // Восстанавливаем обработку кликов для кнопки
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(4px)'
           }}
           size="small"
         >
           <NavigateNextIcon />
         </IconButton>
+      </Box>
+    );
+  };
+
+  // Иконка Ferrari
+  const FerrariLogo = () => (
+    <Box
+      sx={{
+        position: 'absolute',
+        bottom: 16,
+        right: 16,
+        width: '40px',
+        height: '40px',
+        opacity: 0.1,
+        filter: 'drop-shadow(0 0 8px rgba(255, 40, 0, 0.5))',
+        zIndex: 10,
+        transition: 'opacity 0.3s ease',
+        ...(hovered && { opacity: 0.3 })
+      }}
+    >
+      <img 
+        src="/images/ferrari-logo-small.png" 
+        alt="Ferrari" 
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    </Box>
+  );
+
+  // Компонент скорости для визуализации мощности
+  const PowerMeter = () => {
+    if (!car.horsepower) return null;
+    
+    // Расчет процента мощности (до 1000 л.с. считается 100%)
+    const powerPercent = Math.min(car.horsepower / 1000 * 100, 100);
+    
+    return (
+      <Box 
+        sx={{ 
+          position: 'absolute', 
+          top: 16, 
+          left: 16, 
+          zIndex: 10,
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(4px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          opacity: 0,
+          transform: 'translateY(10px)',
+          transition: 'all 0.3s ease',
+          ...(hovered && { 
+            opacity: 1,
+            transform: 'translateY(0)'
+          })
+        }}
+      >
+        <Box 
+          sx={{ 
+            width: '52px',
+            height: '52px',
+            borderRadius: '50%',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <Box 
+            sx={{ 
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              background: `conic-gradient(#FF2800 ${powerPercent}%, transparent ${powerPercent}%, transparent 100%)`,
+              transform: 'rotate(-90deg)',
+            }}
+          />
+          <Box 
+            sx={{ 
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'rgba(0, 0, 0, 0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column'
+            }}
+          >
+            <Typography variant="caption" sx={{ color: 'white', fontSize: '10px', lineHeight: 1 }}>HP</Typography>
+            <Typography variant="body2" sx={{ color: '#FF2800', fontWeight: 'bold', lineHeight: 1 }}>
+              {car.horsepower}
+            </Typography>
+          </Box>
+        </Box>
       </Box>
     );
   };
@@ -257,22 +367,35 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
           display: 'flex', 
           flexDirection: 'column',
           height: '100%',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-          borderRadius: '16px',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+          borderRadius: '12px',
           overflow: 'hidden',
           position: 'relative',
           cursor: 'pointer',
-          backgroundColor: 'white',
+          backgroundColor: 'rgba(25, 25, 30, 0.9)',
+          backdropFilter: 'blur(10px)',
           transition: 'all 0.3s ease',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
           '&:hover': {
-            boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
+            boxShadow: '0 12px 40px rgba(255, 40, 0, 0.15), 0 0 20px rgba(255, 40, 0, 0.1)',
+            border: '1px solid rgba(255, 40, 0, 0.2)',
+          },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '6px',
+            background: 'linear-gradient(to right, #FF2800, #FF5F40)',
+            zIndex: 10
           }
         }}
         onClick={handleCardClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <Box sx={{ position: 'relative', paddingTop: '60%' }}>
+        <Box sx={{ position: 'relative', paddingTop: '60%', overflow: 'hidden' }}>
           <CardMedia
             component="img"
             sx={{ 
@@ -282,8 +405,8 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              transition: 'transform 0.5s ease',
-              ...(hovered && { transform: 'scale(1.05)' })
+              transition: 'transform 0.6s ease',
+              ...(hovered && { transform: 'scale(1.07)' })
             }}
             image={imageUrls[currentImageIndex]}
             alt={`${car.brand} ${car.model}`}
@@ -293,8 +416,14 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
             }}
           />
           
-          {/* Компонент с кнопками навигации */}
+          {/* Кнопки навигации между фото */}
           <ImageNavigationButtons />
+          
+          {/* Индикатор мощности */}
+          <PowerMeter />
+          
+          {/* Водяной знак Ferrari */}
+          <FerrariLogo />
           
           {car.available === false && (
             <Box 
@@ -304,7 +433,7 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                bgcolor: 'rgba(0, 0, 0, 0.6)',
+                bgcolor: 'rgba(0, 0, 0, 0.7)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -320,21 +449,34 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
           <Box
             sx={{
               position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+              height: '50%',
+              zIndex: 5
+            }}
+          />
+          
+          <Box
+            sx={{
+              position: 'absolute',
               top: '10px',
               right: '10px',
               display: 'flex',
               flexDirection: 'column',
               gap: '6px',
-              zIndex: 2
+              zIndex: 15
             }}
           >
             <Chip
               label={car.year}
               sx={{
-                bgcolor: 'primary.main',
+                bgcolor: 'rgba(255, 40, 0, 0.9)',
                 color: 'white',
                 fontWeight: 'bold',
-                height: '28px'
+                height: '28px',
+                borderRadius: '4px'
               }}
               size="small"
             />
@@ -343,10 +485,11 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
               <Chip
                 label={car.category.replace('_', ' ').toUpperCase()}
                 sx={{
-                  bgcolor: 'rgba(0,0,0,0.7)',
+                  bgcolor: 'rgba(0,0,0,0.8)',
                   color: 'white',
                   fontWeight: 'bold',
-                  height: '28px'
+                  height: '28px',
+                  borderRadius: '4px'
                 }}
                 size="small"
               />
@@ -358,11 +501,12 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
                   icon={<TimeToLeaveIcon sx={{ color: 'white !important', fontSize: '16px' }} />}
                   label="АРЕНДА"
                   sx={{
-                    bgcolor: 'rgba(25, 118, 210, 0.8)',
+                    bgcolor: 'rgba(25, 118, 210, 0.9)',
                     color: 'white',
                     fontWeight: 'bold',
                     height: '28px',
-                    '& .MuiChip-icon': { color: 'white' }
+                    '& .MuiChip-icon': { color: 'white' },
+                    borderRadius: '4px'
                   }}
                   size="small"
                 />
@@ -375,11 +519,12 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
                   icon={<DirectionsCarIcon sx={{ color: 'white !important', fontSize: '16px' }} />}
                   label="ТЕСТ-ДРАЙВ"
                   sx={{
-                    bgcolor: 'rgba(76, 175, 80, 0.8)',
+                    bgcolor: 'rgba(76, 175, 80, 0.9)',
                     color: 'white',
                     fontWeight: 'bold',
                     height: '28px',
-                    '& .MuiChip-icon': { color: 'white' }
+                    '& .MuiChip-icon': { color: 'white' },
+                    borderRadius: '4px'
                   }}
                   size="small"
                 />
@@ -388,7 +533,30 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
           </Box>
         </Box>
         
-        <CardContent sx={{ flexGrow: 1, px: 3, py: 2.5, display: 'flex', flexDirection: 'column' }}>
+        <CardContent sx={{ 
+          flexGrow: 1, 
+          px: 3, 
+          py: 2.5, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Диагональная линия */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '150%',
+              height: '1px',
+              background: 'linear-gradient(to right, transparent, rgba(255, 40, 0, 0.7))',
+              transform: 'rotate(-8deg) translateY(15px)',
+              transformOrigin: 'top right'
+            }}
+          />
+          
           <Box sx={{ mb: 1 }}>
             <Typography 
               variant="h5" 
@@ -400,7 +568,8 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
                 display: '-webkit-box',
                 overflow: 'hidden',
                 WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: 2
+                WebkitLineClamp: 2,
+                color: '#fff'
               }}
             >
               {car.brand} {car.model}
@@ -412,8 +581,8 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
             {car.mileage !== undefined && (
               <Tooltip title="Пробег">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <SpeedIcon sx={{ color: 'text.secondary', mr: 0.5, fontSize: '1rem' }} />
-                  <Typography variant="body2" color="text.secondary">
+                  <SpeedIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 0.5, fontSize: '1rem' }} />
+                  <Typography variant="body2" color="rgba(255, 255, 255, 0.7)">
                     {formatNumber(car.mileage)} км
                   </Typography>
                 </Box>
@@ -423,8 +592,8 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
             {car.horsepower && (
               <Tooltip title="Мощность">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <ElectricCarIcon sx={{ color: 'text.secondary', mr: 0.5, fontSize: '1rem' }} />
-                  <Typography variant="body2" color="text.secondary">
+                  <ElectricCarIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 0.5, fontSize: '1rem' }} />
+                  <Typography variant="body2" color="rgba(255, 255, 255, 0.7)">
                     {car.horsepower} л.с.
                   </Typography>
                 </Box>
@@ -434,8 +603,8 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
             {car.acceleration && (
               <Tooltip title="Разгон 0-100 км/ч">
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <TimeToLeaveIcon sx={{ color: 'text.secondary', mr: 0.5, fontSize: '1rem' }} />
-                  <Typography variant="body2" color="text.secondary">
+                  <TimeToLeaveIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 0.5, fontSize: '1rem' }} />
+                  <Typography variant="body2" color="rgba(255, 255, 255, 0.7)">
                     {car.acceleration} сек
                   </Typography>
                 </Box>
@@ -449,7 +618,12 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
                 label={car.exteriorColor} 
                 size="small" 
                 variant="outlined" 
-                sx={{ height: 24, borderRadius: '4px' }} 
+                sx={{ 
+                  height: 24, 
+                  borderRadius: '4px',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  color: 'rgba(255, 255, 255, 0.9)'
+                }} 
               />
             )}
             {car.transmission && (
@@ -457,7 +631,12 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
                 label={car.transmission} 
                 size="small" 
                 variant="outlined" 
-                sx={{ height: 24, borderRadius: '4px' }} 
+                sx={{ 
+                  height: 24, 
+                  borderRadius: '4px',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  color: 'rgba(255, 255, 255, 0.9)'
+                }} 
               />
             )}
             {car.engine && (
@@ -465,18 +644,23 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
                 label={car.engine} 
                 size="small" 
                 variant="outlined" 
-                sx={{ height: 24, borderRadius: '4px' }} 
+                sx={{ 
+                  height: 24, 
+                  borderRadius: '4px',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                  color: 'rgba(255, 255, 255, 0.9)'
+                }} 
               />
             )}
           </Box>
           
-          <Divider sx={{ my: 1.5 }} />
+          <Divider sx={{ my: 1.5, backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
           
           <Box sx={{ mt: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#FF2800', textShadow: '0 0 10px rgba(255, 40, 0, 0.3)' }}>
               {formatPrice(car.price)}
               {car.rentalAvailable && car.rentalPricePerDay && (
-                <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'rgba(255, 255, 255, 0.7)' }}>
                   Аренда от {formatPrice(car.rentalPricePerDay)}/день
                 </Typography>
               )}
@@ -485,8 +669,13 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
             <IconButton
               onClick={handleFavoriteClick}
               size="medium"
-              color={favorite ? "error" : "default"}
-              sx={{ ml: 'auto' }}
+              sx={{ 
+                ml: 'auto',
+                color: favorite ? "#FF2800" : "rgba(255, 255, 255, 0.6)",
+                '&:hover': {
+                  color: favorite ? "#FF5F40" : "#FF2800"
+                }
+              }}
             >
               {favorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
             </IconButton>
@@ -497,7 +686,18 @@ const CarCard = ({ car, onFavoriteToggle, isFavorite = false }) => {
             component={Link}
             to={`/car/${car.id}`}
             fullWidth 
-            sx={{ mt: 2 }}
+            sx={{ 
+              mt: 2,
+              background: 'linear-gradient(45deg, #CC2000, #FF2800)',
+              borderRadius: '6px',
+              textTransform: 'none',
+              fontWeight: 'bold',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #FF2800, #FF5F40)',
+                boxShadow: '0 4px 15px rgba(255, 40, 0, 0.3)'
+              },
+              transition: 'all 0.3s ease'
+            }}
           >
             Подробнее
           </Button>

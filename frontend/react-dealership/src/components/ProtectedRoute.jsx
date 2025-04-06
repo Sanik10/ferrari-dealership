@@ -1,47 +1,53 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-const ProtectedRoute = ({ children, allowedRoles = [], vipOnly, adminOnly }) => {
-  const user = JSON.parse(localStorage.getItem('user'));
+const ProtectedRoute = ({ children, allowedRoles = [], adminOnly, vipOnly }) => {
+  const { user, isAuthenticated } = useAuth();
   
-  // Отладочная информация
   console.log("ProtectedRoute - Параметры:", { allowedRoles, vipOnly, adminOnly });
   console.log("ProtectedRoute - Пользователь:", user);
-  console.log("ProtectedRoute - Роль пользователя:", user?.role);
-  console.log("ProtectedRoute - Админ или менеджер:", user?.role === 'admin' || user?.role === 'manager');
   
-  // Если пользователь не авторизован
-  if (!user) {
-    console.log("ProtectedRoute - Перенаправление: пользователь не авторизован");
+  // Получаем актуальные данные пользователя с учетом возможной вложенности
+  const userData = user?.user || user;
+  const userRole = userData?.role;
+  
+  console.log("ProtectedRoute - Роль пользователя:", userRole);
+  
+  // Проверяем, является ли пользователь администратором или менеджером
+  const isAdminOrManager = userRole === 'admin' || userRole === 'manager';
+  console.log("ProtectedRoute - Админ или менеджер:", isAdminOrManager);
+  
+  // Проверяем, имеет ли пользователь VIP-статус
+  const isVIP = userData?.isVIP === true;
+  console.log("ProtectedRoute - VIP-статус:", isVIP);
+
+  // Если пользователь не авторизован, перенаправляем на страницу входа
+  if (!isAuthenticated) {
+    console.log("ProtectedRoute - Доступ запрещен: не авторизован");
+    return <Navigate to="/login" replace />;
+  }
+
+  // Если требуется роль админа, проверяем наличие соответствующих прав
+  if (adminOnly && !isAdminOrManager) {
+    console.log("ProtectedRoute - Доступ запрещен: требуются права администратора");
     return <Navigate to="/" replace />;
   }
-  
-  // Проверка роли, если указаны разрешенные роли
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    console.log("ProtectedRoute - Перенаправление: роль не соответствует разрешенным");
+
+  // Если требуется VIP-статус, проверяем его наличие
+  if (vipOnly && !isVIP) {
+    console.log("ProtectedRoute - Доступ запрещен: требуется VIP-статус");
     return <Navigate to="/" replace />;
   }
-  
-  // Проверка для VIP маршрутов
-  if (vipOnly && !user.vipStatus) {
-    console.log("ProtectedRoute - Перенаправление: требуется VIP статус");
+
+  // Если указаны конкретные роли, проверяем наличие роли пользователя в списке
+  if (allowedRoles.length > 0 && (!userRole || !allowedRoles.includes(userRole))) {
+    console.log("ProtectedRoute - Доступ запрещен: недостаточно прав");
     return <Navigate to="/" replace />;
   }
-  
-  // Проверка для админ маршрутов
-  if (adminOnly && user.role !== 'admin' && user.role !== 'manager') {
-    console.log("ProtectedRoute - Перенаправление: требуются права администратора или менеджера");
-    return <Navigate to="/" replace />;
-  }
-  
+
   console.log("ProtectedRoute - Доступ разрешен");
-  
-  // Для случая, когда children передается явно
-  if (children) {
-    return children;
-  }
-  
-  // Для вложенных маршрутов, использующих Outlet
-  return <Outlet />;
+  return children;
 };
 
 export default ProtectedRoute; 

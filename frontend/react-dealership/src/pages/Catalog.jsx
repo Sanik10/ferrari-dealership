@@ -39,14 +39,14 @@ import { useTheme, styled } from '@mui/material/styles';
 import { useSearchParams } from 'react-router-dom';
 
 // Стилизованные компоненты
-const FerrariSlider = styled(Slider)(({ theme }) => ({
+const FerrariSlider = styled(Slider)(() => ({
   color: '#FF2800',
   '& .MuiSlider-thumb': {
     '&:hover, &.Mui-focusVisible': {
-      boxShadow: `0px 0px 0px 8px ${theme.palette.mode === 'dark' ? 'rgba(255, 40, 0, 0.16)' : 'rgba(255, 40, 0, 0.16)'}`,
+      boxShadow: `0px 0px 0px 8px rgba(255, 40, 0, 0.16)`,
     },
     '&.Mui-active': {
-      boxShadow: `0px 0px 0px 14px ${theme.palette.mode === 'dark' ? 'rgba(255, 40, 0, 0.16)' : 'rgba(255, 40, 0, 0.16)'}`,
+      boxShadow: `0px 0px 0px 14px rgba(255, 40, 0, 0.16)`,
     },
   },
   '& .MuiSlider-rail': {
@@ -55,11 +55,64 @@ const FerrariSlider = styled(Slider)(({ theme }) => ({
   },
 }));
 
-const FilterPaper = styled(Paper)(({ theme }) => ({
-  backgroundColor: 'rgba(30, 30, 30, 0.8)',
+const FilterPaper = styled(Paper)(() => ({
+  backgroundColor: 'rgba(30, 30, 30, 0.9)',
   backdropFilter: 'blur(10px)',
   border: '1px solid rgba(255, 255, 255, 0.1)',
-  borderRadius: '12px',
+  borderRadius: '8px',
+}));
+
+// Стилизованный Select компонент для унификации
+const FerrariSelect = styled(Select)(() => ({
+  color: 'white',
+  borderRadius: '6px',
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: '6px',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#FF2800',
+  },
+  '& .MuiSvgIcon-root': {
+    color: 'rgba(255, 255, 255, 0.7)',
+  }
+}));
+
+// Стилизованный TextField
+const FerrariTextField = styled(TextField)(() => ({
+  '& .MuiOutlinedInput-root': {
+    color: 'white',
+    borderRadius: '6px',
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+      borderRadius: '6px',
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'rgba(255, 255, 255, 0.5)',
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#FF2800',
+    }
+  },
+  '& .MuiInputLabel-root': {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: '#FF2800',
+  }
+}));
+
+// Стилизованная FormControl
+const FerrariFormControl = styled(FormControl)(() => ({
+  '& .MuiInputLabel-root': {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: '#FF2800',
+  }
 }));
 
 const Catalog = () => {
@@ -249,7 +302,7 @@ const Catalog = () => {
         </Box>
         
         <FilterPaper 
-          elevation={0} 
+          elevation={3}
           sx={{ 
             mb: 6, 
             p: 3, 
@@ -263,13 +316,13 @@ const Catalog = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <FilterListIcon sx={{ mr: 1, color: '#FF2800' }} />
-              <Typography variant="h6">
+              <Typography variant="h6" sx={{ color: 'white' }}>
                 Фильтры
                 {activeFilters > 0 && (
                   <Chip 
                     size="small" 
                     label={activeFilters} 
-                    sx={{ ml: 1, bgcolor: '#FF2800', color: 'white' }}
+                    sx={{ ml: 1, bgcolor: '#FF2800', color: 'white', borderRadius: '4px' }}
                   />
                 )}
               </Typography>
@@ -282,10 +335,11 @@ const Catalog = () => {
                   onClick={resetFilters}
                   sx={{ 
                     mr: 2, 
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: 'rgba(255, 255, 255, 0.9)',
                     '&:hover': {
                       color: '#FF2800'
-                    }
+                    },
+                    borderRadius: '6px'
                   }}
                   startIcon={<ClearIcon />}
                 >
@@ -296,7 +350,10 @@ const Catalog = () => {
               <IconButton 
                 size="small"
                 onClick={() => setShowFilters(!showFilters)}
-                sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                sx={{ 
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  borderRadius: '6px'
+                }}
               >
                 {showFilters ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
               </IconButton>
@@ -307,7 +364,7 @@ const Catalog = () => {
             <Box sx={{ mt: 2 }}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <TextField
+                  <FerrariTextField
                     fullWidth
                     placeholder="Поиск по марке, модели или описанию"
                     value={search}
@@ -323,94 +380,55 @@ const Catalog = () => {
                           <IconButton 
                             size="small" 
                             onClick={() => setSearch('')}
-                            sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                            sx={{ 
+                              color: 'rgba(255, 255, 255, 0.9)',
+                              borderRadius: '4px'
+                            }}
                           >
                             <ClearIcon fontSize="small" />
                           </IconButton>
                         </InputAdornment>
-                      ) : null,
-                      sx: { 
-                        color: 'white',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255, 255, 255, 0.3)',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255, 255, 255, 0.5)',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#FF2800',
-                        }
-                      }
+                      ) : null
                     }}
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6} md={3}>
-                  <FormControl fullWidth>
-                    <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Марка</InputLabel>
-                    <Select 
+                  <FerrariFormControl fullWidth>
+                    <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>Марка</InputLabel>
+                    <FerrariSelect 
                       value={brand} 
                       onChange={(e) => setBrand(e.target.value)}
-                      sx={{ 
-                        color: 'white',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255, 255, 255, 0.3)',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255, 255, 255, 0.5)',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#FF2800',
-                        },
-                        '& .MuiSvgIcon-root': {
-                          color: 'rgba(255, 255, 255, 0.7)',
-                        }
-                      }}
-                      startAdornment={<DirectionsCarIcon sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />}
+                      startAdornment={<DirectionsCarIcon sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.8)' }} />}
                     >
                       <MenuItem value="">Все</MenuItem>
                       {uniqueBrands.map(brand => (
                         <MenuItem key={brand} value={brand}>{brand}</MenuItem>
                       ))}
-                    </Select>
-                  </FormControl>
+                    </FerrariSelect>
+                  </FerrariFormControl>
                 </Grid>
                 
                 <Grid item xs={12} sm={6} md={3}>
-                  <FormControl fullWidth>
-                    <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Год выпуска</InputLabel>
-                    <Select 
+                  <FerrariFormControl fullWidth>
+                    <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>Год выпуска</InputLabel>
+                    <FerrariSelect 
                       value={year} 
                       onChange={(e) => setYear(e.target.value)}
-                      sx={{ 
-                        color: 'white',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255, 255, 255, 0.3)',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255, 255, 255, 0.5)',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#FF2800',
-                        },
-                        '& .MuiSvgIcon-root': {
-                          color: 'rgba(255, 255, 255, 0.7)',
-                        }
-                      }}
-                      startAdornment={<CalendarTodayIcon sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />}
+                      startAdornment={<CalendarTodayIcon sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.8)' }} />}
                     >
                       <MenuItem value="">Все годы</MenuItem>
                       {uniqueYears.map(year => (
                         <MenuItem key={year} value={year.toString()}>{year}</MenuItem>
                       ))}
-                    </Select>
-                  </FormControl>
+                    </FerrariSelect>
+                  </FerrariFormControl>
                 </Grid>
                 
                 <Grid item xs={12} sm={6} md={4}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <AttachMoneyIcon sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />
-                    <Typography>
+                    <AttachMoneyIcon sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.8)' }} />
+                    <Typography sx={{ color: 'white' }}>
                       Цена: {new Intl.NumberFormat('ru-RU', { 
                         style: 'currency', 
                         currency: 'RUB',
@@ -439,34 +457,19 @@ const Catalog = () => {
                 </Grid>
                 
                 <Grid item xs={12} sm={6} md={2}>
-                  <FormControl fullWidth>
-                    <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Сортировать</InputLabel>
-                    <Select
+                  <FerrariFormControl fullWidth>
+                    <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>Сортировать</InputLabel>
+                    <FerrariSelect
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      sx={{ 
-                        color: 'white',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255, 255, 255, 0.3)',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255, 255, 255, 0.5)',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#FF2800',
-                        },
-                        '& .MuiSvgIcon-root': {
-                          color: 'rgba(255, 255, 255, 0.7)',
-                        }
-                      }}
-                      startAdornment={<SortIcon sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />}
+                      startAdornment={<SortIcon sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.8)' }} />}
                     >
                       <MenuItem value="newest">Сначала новые</MenuItem>
                       <MenuItem value="oldest">Сначала старые</MenuItem>
                       <MenuItem value="price_asc">По возрастанию цены</MenuItem>
                       <MenuItem value="price_desc">По убыванию цены</MenuItem>
-                    </Select>
-                  </FormControl>
+                    </FerrariSelect>
+                  </FerrariFormControl>
                 </Grid>
               </Grid>
             </Box>
@@ -538,7 +541,7 @@ const Catalog = () => {
                   sx={{ 
                     py: 8, 
                     textAlign: 'center',
-                    borderRadius: '12px',
+                    borderRadius: '8px',
                     p: 4
                   }}
                   component={motion.div}
@@ -549,7 +552,7 @@ const Catalog = () => {
                   <Typography variant="h5" color="white" gutterBottom>
                     По вашему запросу ничего не найдено
                   </Typography>
-                  <Typography variant="body1" color="rgba(255, 255, 255, 0.7)" paragraph>
+                  <Typography variant="body1" color="rgba(255, 255, 255, 0.8)" paragraph>
                     Попробуйте изменить параметры поиска или связаться с нами для получения 
                     индивидуального предложения
                   </Typography>
@@ -559,6 +562,7 @@ const Catalog = () => {
                     startIcon={<ClearIcon />}
                     sx={{
                       backgroundColor: '#FF2800',
+                      borderRadius: '6px',
                       '&:hover': {
                         backgroundColor: '#CC2000',
                       }
@@ -586,6 +590,7 @@ const Catalog = () => {
               size="large"
               sx={{
                 backgroundColor: '#FF2800',
+                borderRadius: '6px',
                 '&:hover': {
                   backgroundColor: '#CC2000',
                 },

@@ -23,7 +23,10 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminEvents from './pages/admin/AdminEvents';
 import AdminTestDrives from './pages/admin/AdminTestDrives';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLayout from './pages/admin/AdminLayout';
 import { AuthProvider } from './contexts/AuthContext';
+import { SnackbarProvider } from './contexts/SnackbarContext';
 import './styles/App.css';
 
 // Добавляем отладочную информацию для маршрутов
@@ -150,45 +153,49 @@ const App = () => {
   return (
     <AuthProvider>
       <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Router>
-          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <Navbar />
-            <Box component="main" sx={{ flexGrow: 1 }}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/catalog" element={<Catalog />} />
-                <Route path="/car/:id" element={<CarDetails />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/test-drive" element={<TestDrive />} />
-                
-                {/* Защищенные маршруты для авторизованных пользователей */}
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/order/:id" element={<ProtectedRoute><OrderProcess /></ProtectedRoute>} />
-                <Route path="/service" element={<ProtectedRoute><ServiceAppointment /></ProtectedRoute>} />
-                <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+        <SnackbarProvider>
+          <CssBaseline />
+          <Router>
+            <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+              <Navbar />
+              <Box component="main" sx={{ flexGrow: 1 }}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/catalog" element={<Catalog />} />
+                  <Route path="/car/:id" element={<CarDetails />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/test-drive" element={<TestDrive />} />
+                  
+                  {/* Защищенные маршруты для авторизованных пользователей */}
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/order/:id" element={<ProtectedRoute><OrderProcess /></ProtectedRoute>} />
+                  <Route path="/service" element={<ProtectedRoute><ServiceAppointment /></ProtectedRoute>} />
+                  <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
 
-                {/* VIP маршруты */}
-                <Route path="/vip" element={<ProtectedRoute vipOnly><VipServices /></ProtectedRoute>} />
+                  {/* VIP маршруты */}
+                  <Route path="/vip" element={<ProtectedRoute vipOnly><VipServices /></ProtectedRoute>} />
 
-                {/* Админ маршруты */}
-                <Route path="/admin" element={<Navigate to="/admin/cars" replace />} />
-                <Route path="/admin/cars" element={<ProtectedRoute adminOnly><AdminCars /></ProtectedRoute>} />
-                <Route path="/admin/orders" element={<ProtectedRoute adminOnly><AdminOrders /></ProtectedRoute>} />
-                <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
-                <Route path="/admin/events" element={<ProtectedRoute adminOnly><AdminEvents /></ProtectedRoute>} />
-                <Route path="/admin/test-drives" element={<ProtectedRoute adminOnly><AdminTestDrives /></ProtectedRoute>} />
+                  {/* Админ маршруты */}
+                  <Route path="/admin" element={<ProtectedRoute adminOnly><AdminLayout /></ProtectedRoute>}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="/admin/cars" element={<AdminCars />} />
+                    <Route path="/admin/orders" element={<AdminOrders />} />
+                    <Route path="/admin/users" element={<AdminUsers />} />
+                    <Route path="/admin/events" element={<AdminEvents />} />
+                    <Route path="/admin/test-drives" element={<AdminTestDrives />} />
+                  </Route>
 
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
-              </Routes>
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="*" element={<Navigate to="/404" replace />} />
+                </Routes>
+              </Box>
+              <Footer />
             </Box>
-            <Footer />
-          </Box>
-        </Router>
+          </Router>
+        </SnackbarProvider>
       </ThemeProvider>
     </AuthProvider>
   );

@@ -198,6 +198,7 @@ class CarController {
       console.log(`- ID: ${currentCar.id}`);
       console.log(`- Бренд/Модель: ${currentCar.brand} ${currentCar.model}`);
       console.log(`- Изображения: ${JSON.stringify(currentCar.images)}`);
+      console.log(`- Особенности: ${JSON.stringify(currentCar.features)}`);
       
       // Создаем данные для обновления
       const updateData = {
@@ -240,6 +241,29 @@ class CarController {
         description: req.body.description || currentCar.description,
         history: req.body.history || currentCar.history
       };
+      
+      // Обработка особенностей (features)
+      if (req.body.features) {
+        console.log(`Обрабатываем features из запроса: ${req.body.features}`);
+        
+        // Проверяем, пришли ли features в виде массива (multiple values в FormData)
+        const features = req.body.features;
+        if (Array.isArray(features)) {
+          updateData.features = features;
+          console.log(`Features как массив: ${updateData.features}`);
+        } else if (typeof features === 'string') {
+          // Пытаемся разобрать JSON, если это JSON строка
+          try {
+            const parsedFeatures = JSON.parse(features);
+            updateData.features = Array.isArray(parsedFeatures) ? parsedFeatures : [features];
+            console.log(`Features из JSON строки: ${updateData.features}`);
+          } catch (e) {
+            // Не JSON, просто строка
+            updateData.features = [features];
+            console.log(`Features как одиночная строка: ${updateData.features}`);
+          }
+        }
+      }
       
       // Логирование данных обновления
       console.log("Данные для обновления:");
@@ -378,7 +402,31 @@ class CarController {
       
       console.log(`Индекс главного изображения из запроса: ${mainImageIndex}`);
       
+      // Обрабатываем дополнительные данные, если они были переданы
+      const updateData = {};
+      
+      // Обработка особенностей (features) при загрузке изображений
+      if (req.body.features) {
+        console.log(`Обрабатываем features при загрузке изображений: ${req.body.features}`);
+        
+        const features = req.body.features;
+        if (Array.isArray(features)) {
+          updateData.features = features;
+          console.log(`Features как массив: ${updateData.features}`);
+        } else if (typeof features === 'string') {
+          try {
+            const parsedFeatures = JSON.parse(features);
+            updateData.features = Array.isArray(parsedFeatures) ? parsedFeatures : [features];
+            console.log(`Features из JSON строки: ${updateData.features}`);
+          } catch (e) {
+            updateData.features = [features];
+            console.log(`Features как одиночная строка: ${updateData.features}`);
+          }
+        }
+      }
+      
       // Обновляем автомобиль с изображениями и главным изображением
+      await carService.updateCar(carId, updateData);
       const updatedCar = await carService.updateCarImages(carId, allImages, null, mainImageIndex);
       
       res.json({
