@@ -184,8 +184,8 @@ dist
 /frontend/react-dealership/build/
 
 # исключите большие папки
-backend/node_modules/" > .gitignore
-frontend/react-dealership/node_modules/" >> .gitignore
+backend/node_modules/*
+frontend/react-dealership/node_modules/*
 
 # git add .gitignore
 # git commit -m "Добавление .gitignore"
