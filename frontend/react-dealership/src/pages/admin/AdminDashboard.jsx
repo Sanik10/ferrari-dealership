@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
+import { API_URL } from '../../config';
 import {
   Box,
   Container,
@@ -15,17 +17,17 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider
+  Divider,
+  CircularProgress
 } from '@mui/material';
-import {
-  Dashboard as DashboardIcon,
-  DirectionsCar as CarsIcon,
-  ShoppingCart as OrdersIcon,
-  People as UsersIcon,
-  Event as EventsIcon,
-  TimeToLeave as TestDrivesIcon,
-  ArrowForward as ArrowForwardIcon
-} from '@mui/icons-material';
+
+// Иконки
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import PeopleIcon from '@mui/icons-material/People';
+import EventIcon from '@mui/icons-material/Event';
+import DriveEtaIcon from '@mui/icons-material/DriveEta';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 // Стили для активного элемента навигации
 const activeNavItemStyle = {
@@ -47,6 +49,7 @@ const AdminDashboard = () => {
     events: 0,
     testDrives: 0
   });
+  const [loading, setLoading] = useState(false);
 
   // Загрузка реальных данных статистики
   useEffect(() => {
@@ -54,38 +57,29 @@ const AdminDashboard = () => {
       return; // Не загружаем данные, если нет прав
     }
     
-    const loadStats = async () => {
+    const fetchStats = async () => {
+      setLoading(true);
+      
       try {
-        // Здесь в будущем можно добавить реальные запросы к API
-        // const response = await axios.get(`${API_URL}/admin/stats`);
-        // setStats(response.data);
+        const response = await axios.get(`${API_URL}/api/stats`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
         
-        // Временно загружаем тестовые данные из localStorage или используем нули
-        const storedStats = localStorage.getItem('adminStats');
-        if (storedStats) {
-          try {
-            setStats(JSON.parse(storedStats));
-          } catch (e) {
-            console.error('Ошибка парсинга данных статистики:', e);
-            // Если не удалось разобрать данные, устанавливаем нули
-            setStats({
-              cars: 0,
-              orders: 0,
-              users: 0,
-              events: 0,
-              testDrives: 0
-            });
-          }
+        if (response.data && response.data.success) {
+          setStats(response.data.data);
+          console.log('Статистика загружена:', response.data.data);
+        } else {
+          console.error('Неверный формат данных статистики:', response.data);
         }
-        
-        console.log('Статистика загружена');
       } catch (error) {
         console.error('Ошибка при загрузке статистики:', error);
+      } finally {
+        setLoading(false);
       }
     };
     
-    loadStats();
-  }, [user, setStats]);
+    fetchStats();
+  }, [user]);
 
   // Проверка активного раздела
   const isActive = (path) => location.pathname === path;
@@ -143,7 +137,7 @@ const AdminDashboard = () => {
                   sx={isActive('/admin/cars') ? activeNavItemStyle : {}}
                 >
                   <ListItemIcon>
-                    <CarsIcon sx={{ color: '#FF2800' }} />
+                    <DirectionsCarIcon sx={{ color: '#FF2800' }} />
                   </ListItemIcon>
                   <ListItemText
                     primary="Автомобили"
@@ -159,7 +153,7 @@ const AdminDashboard = () => {
                   sx={isActive('/admin/orders') ? activeNavItemStyle : {}}
                 >
                   <ListItemIcon>
-                    <OrdersIcon sx={{ color: '#FF2800' }} />
+                    <ShoppingCartIcon sx={{ color: '#FF2800' }} />
                   </ListItemIcon>
                   <ListItemText
                     primary="Заказы"
@@ -175,7 +169,7 @@ const AdminDashboard = () => {
                   sx={isActive('/admin/users') ? activeNavItemStyle : {}}
                 >
                   <ListItemIcon>
-                    <UsersIcon sx={{ color: '#FF2800' }} />
+                    <PeopleIcon sx={{ color: '#FF2800' }} />
                   </ListItemIcon>
                   <ListItemText
                     primary="Пользователи"
@@ -191,7 +185,7 @@ const AdminDashboard = () => {
                   sx={isActive('/admin/events') ? activeNavItemStyle : {}}
                 >
                   <ListItemIcon>
-                    <EventsIcon sx={{ color: '#FF2800' }} />
+                    <EventIcon sx={{ color: '#FF2800' }} />
                   </ListItemIcon>
                   <ListItemText
                     primary="События"
@@ -207,7 +201,7 @@ const AdminDashboard = () => {
                   sx={isActive('/admin/test-drives') ? activeNavItemStyle : {}}
                 >
                   <ListItemIcon>
-                    <TestDrivesIcon sx={{ color: '#FF2800' }} />
+                    <DriveEtaIcon sx={{ color: '#FF2800' }} />
                   </ListItemIcon>
                   <ListItemText
                     primary="Тест-драйвы"
@@ -242,190 +236,198 @@ const AdminDashboard = () => {
 
               {/* Статистические карточки */}
               <Grid container spacing={3} sx={{ mb: 5 }}>
-                <Grid item xs={12} sm={6} md={4}>
-                  <Card 
-                    sx={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(5px)',
-                      borderRadius: '16px',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
-                      }
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <CarsIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
-                        <Typography variant="h6" sx={{ color: 'white' }}>Автомобили</Typography>
-                      </Box>
-                      <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                        {stats.cars}
-                      </Typography>
-                      <Button 
-                        component={Link} 
-                        to="/admin/cars"
-                        endIcon={<ArrowForwardIcon />}
+                {loading ? (
+                  <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', my: 10 }}>
+                    <CircularProgress sx={{ color: '#FF2800' }} />
+                  </Grid>
+                ) : (
+                  <>
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Card 
                         sx={{ 
-                          mt: 2, 
-                          color: '#FF2800',
-                          '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          backdropFilter: 'blur(5px)',
+                          borderRadius: '16px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-5px)',
+                            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+                          }
                         }}
                       >
-                        Управление
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <DirectionsCarIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
+                            <Typography variant="h6" sx={{ color: 'white' }}>Автомобили</Typography>
+                          </Box>
+                          <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                            {stats.cars}
+                          </Typography>
+                          <Button 
+                            component={Link} 
+                            to="/admin/cars"
+                            endIcon={<ArrowForwardIcon />}
+                            sx={{ 
+                              mt: 2, 
+                              color: '#FF2800',
+                              '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                            }}
+                          >
+                            Управление
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Grid>
 
-                <Grid item xs={12} sm={6} md={4}>
-                  <Card 
-                    sx={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(5px)',
-                      borderRadius: '16px',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
-                      }
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <OrdersIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
-                        <Typography variant="h6" sx={{ color: 'white' }}>Заказы</Typography>
-                      </Box>
-                      <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                        {stats.orders}
-                      </Typography>
-                      <Button 
-                        component={Link} 
-                        to="/admin/orders"
-                        endIcon={<ArrowForwardIcon />}
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Card 
                         sx={{ 
-                          mt: 2, 
-                          color: '#FF2800',
-                          '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          backdropFilter: 'blur(5px)',
+                          borderRadius: '16px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-5px)',
+                            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+                          }
                         }}
                       >
-                        Управление
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <ShoppingCartIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
+                            <Typography variant="h6" sx={{ color: 'white' }}>Заказы</Typography>
+                          </Box>
+                          <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                            {stats.orders}
+                          </Typography>
+                          <Button 
+                            component={Link} 
+                            to="/admin/orders"
+                            endIcon={<ArrowForwardIcon />}
+                            sx={{ 
+                              mt: 2, 
+                              color: '#FF2800',
+                              '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                            }}
+                          >
+                            Управление
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Grid>
 
-                <Grid item xs={12} sm={6} md={4}>
-                  <Card 
-                    sx={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(5px)',
-                      borderRadius: '16px',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
-                      }
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <UsersIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
-                        <Typography variant="h6" sx={{ color: 'white' }}>Пользователи</Typography>
-                      </Box>
-                      <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                        {stats.users}
-                      </Typography>
-                      <Button 
-                        component={Link} 
-                        to="/admin/users"
-                        endIcon={<ArrowForwardIcon />}
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Card 
                         sx={{ 
-                          mt: 2, 
-                          color: '#FF2800',
-                          '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          backdropFilter: 'blur(5px)',
+                          borderRadius: '16px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-5px)',
+                            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+                          }
                         }}
                       >
-                        Управление
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <PeopleIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
+                            <Typography variant="h6" sx={{ color: 'white' }}>Пользователи</Typography>
+                          </Box>
+                          <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                            {stats.users}
+                          </Typography>
+                          <Button 
+                            component={Link} 
+                            to="/admin/users"
+                            endIcon={<ArrowForwardIcon />}
+                            sx={{ 
+                              mt: 2, 
+                              color: '#FF2800',
+                              '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                            }}
+                          >
+                            Управление
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Grid>
 
-                <Grid item xs={12} sm={6} md={6}>
-                  <Card 
-                    sx={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(5px)',
-                      borderRadius: '16px',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
-                      }
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <EventsIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
-                        <Typography variant="h6" sx={{ color: 'white' }}>События</Typography>
-                      </Box>
-                      <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                        {stats.events}
-                      </Typography>
-                      <Button 
-                        component={Link} 
-                        to="/admin/events"
-                        endIcon={<ArrowForwardIcon />}
+                    <Grid item xs={12} sm={6} md={6}>
+                      <Card 
                         sx={{ 
-                          mt: 2, 
-                          color: '#FF2800',
-                          '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          backdropFilter: 'blur(5px)',
+                          borderRadius: '16px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-5px)',
+                            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+                          }
                         }}
                       >
-                        Управление
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <EventIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
+                            <Typography variant="h6" sx={{ color: 'white' }}>События</Typography>
+                          </Box>
+                          <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                            {stats.events}
+                          </Typography>
+                          <Button 
+                            component={Link} 
+                            to="/admin/events"
+                            endIcon={<ArrowForwardIcon />}
+                            sx={{ 
+                              mt: 2, 
+                              color: '#FF2800',
+                              '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                            }}
+                          >
+                            Управление
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Grid>
 
-                <Grid item xs={12} sm={6} md={6}>
-                  <Card 
-                    sx={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      backdropFilter: 'blur(5px)',
-                      borderRadius: '16px',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
-                      }
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <TestDrivesIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
-                        <Typography variant="h6" sx={{ color: 'white' }}>Тест-драйвы</Typography>
-                      </Box>
-                      <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                        {stats.testDrives}
-                      </Typography>
-                      <Button 
-                        component={Link} 
-                        to="/admin/test-drives"
-                        endIcon={<ArrowForwardIcon />}
+                    <Grid item xs={12} sm={6} md={6}>
+                      <Card 
                         sx={{ 
-                          mt: 2, 
-                          color: '#FF2800',
-                          '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          backdropFilter: 'blur(5px)',
+                          borderRadius: '16px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-5px)',
+                            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+                          }
                         }}
                       >
-                        Управление
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </Grid>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                            <DriveEtaIcon sx={{ color: '#FF2800', mr: 1, fontSize: 32 }} />
+                            <Typography variant="h6" sx={{ color: 'white' }}>Тест-драйвы</Typography>
+                          </Box>
+                          <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                            {stats.testDrives}
+                          </Typography>
+                          <Button 
+                            component={Link} 
+                            to="/admin/test-drives"
+                            endIcon={<ArrowForwardIcon />}
+                            sx={{ 
+                              mt: 2, 
+                              color: '#FF2800',
+                              '&:hover': { backgroundColor: 'rgba(255, 40, 0, 0.05)' }
+                            }}
+                          >
+                            Управление
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  </>
+                )}
               </Grid>
 
               {/* Информация о системе */}

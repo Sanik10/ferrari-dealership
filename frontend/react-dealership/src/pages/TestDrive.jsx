@@ -26,11 +26,13 @@ import {
   IconButton,
   Rating,
   List,
-  ListItem
+  ListItem,
+  Skeleton
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 // Импорт компонента для записи на тест-драйв
 import TestDriveScheduler from '../components/TestDriveScheduler';
@@ -47,17 +49,20 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import LoginIcon from '@mui/icons-material/Login';
 
 // API
-import { carAPI } from '../services/api';
+import { carAPI, testDriveAPI } from '../services/api';
 
 const TestDrive = () => {
+  const { isAuthenticated } = useAuth();
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCar, setSelectedCar] = useState(null);
   const [schedulerOpen, setSchedulerOpen] = useState(false);
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+  const [userTestDrives, setUserTestDrives] = useState([]);
   
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -81,6 +86,22 @@ const TestDrive = () => {
     fetchTestDriveCars();
   }, []);
   
+  // Загрузка тест-драйвов пользователя, если он авторизован
+  useEffect(() => {
+    const fetchUserTestDrives = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        const response = await testDriveAPI.getMyTestDrives();
+        setUserTestDrives(response.data);
+      } catch (error) {
+        console.error('Ошибка при загрузке тест-драйвов пользователя:', error);
+      }
+    };
+    
+    fetchUserTestDrives();
+  }, [isAuthenticated]);
+  
   const handleCarSelect = (car) => {
     setSelectedCar(car);
     setSchedulerOpen(true);
@@ -88,6 +109,22 @@ const TestDrive = () => {
   
   const handleSchedulerClose = () => {
     setSchedulerOpen(false);
+  };
+  
+  const handleLoginRedirect = () => {
+    navigate('/login', { state: { from: '/test-drive' } });
+  };
+  
+  const formatTestDriveDate = (date) => {
+    if (!date) return 'Не указана';
+    const dateObj = new Date(date);
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(dateObj);
   };
   
   const containerVariants = {
@@ -137,6 +174,59 @@ const TestDrive = () => {
       answer: 'Нет, тест-драйв проводится бесплатно для потенциальных клиентов. Для некоторых эксклюзивных моделей может понадобиться предварительное подтверждение.'
     }
   ];
+  
+  // Компонент загрузки для карточек автомобилей
+  const CarSkeleton = () => (
+    <Card 
+      elevation={5}
+      sx={{ 
+        borderRadius: '12px',
+        backgroundColor: 'rgba(30,30,30,0.8)',
+        backdropFilter: 'blur(5px)',
+        overflow: 'hidden',
+        height: '100%'
+      }}
+    >
+      <Skeleton 
+        variant="rectangular" 
+        height={160} 
+        sx={{ backgroundColor: 'rgba(255,255,255,0.1)' }} 
+      />
+      <CardContent sx={{ color: 'white' }}>
+        <Skeleton 
+          variant="text" 
+          sx={{ backgroundColor: 'rgba(255,255,255,0.1)', width: '70%' }} 
+        />
+        <Box sx={{ display: 'flex', my: 1 }}>
+          <Skeleton 
+            variant="rectangular" 
+            width={100} 
+            height={24} 
+            sx={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '16px' }} 
+          />
+        </Box>
+        <Skeleton 
+          variant="text" 
+          sx={{ backgroundColor: 'rgba(255,255,255,0.1)', width: '50%' }} 
+        />
+        <Box sx={{ mt: 1 }}>
+          <Skeleton 
+            variant="text" 
+            sx={{ backgroundColor: 'rgba(255,255,255,0.1)', width: '100%' }} 
+          />
+          <Skeleton 
+            variant="text" 
+            sx={{ backgroundColor: 'rgba(255,255,255,0.1)', width: '100%' }} 
+          />
+        </Box>
+        <Skeleton 
+          variant="rectangular" 
+          height={40} 
+          sx={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', mt: 2 }} 
+        />
+      </CardContent>
+    </Card>
+  );
   
   return (
     <Box
@@ -279,9 +369,13 @@ const TestDrive = () => {
           </Box>
           
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-              <CircularProgress sx={{ color: '#FF2800' }} />
-            </Box>
+            <Grid container spacing={3}>
+              {[1, 2, 3].map((item) => (
+                <Grid item xs={12} sm={6} md={4} key={`skeleton-${item}`}>
+                  <CarSkeleton />
+                </Grid>
+              ))}
+            </Grid>
           ) : error ? (
             <Alert 
               severity="error" 
@@ -303,7 +397,7 @@ const TestDrive = () => {
               <Grid container spacing={3}>
                 {cars.length > 0 ? (
                   cars.map((car) => (
-                    <Grid item xs={12} sm={6} md={4} key={car.id}>
+                    <Grid item xs={12} sm={6} md={isSmallScreen ? 6 : 4} key={car.id}>
                       <motion.div variants={itemVariants}>
                         <Card 
                           elevation={5}
@@ -321,7 +415,7 @@ const TestDrive = () => {
                           <CardActionArea onClick={() => handleCarSelect(car)}>
                             <CardMedia
                               component="img"
-                              height="160"
+                              height={isSmallScreen ? "140" : "160"}
                               image={car.imageUrl || '/images/default-car.jpg'}
                               alt={`${car.brand} ${car.model}`}
                             />
@@ -412,6 +506,80 @@ const TestDrive = () => {
             </motion.div>
           )}
         </Box>
+        
+        {/* Блок с информацией о предстоящих тест-драйвах пользователя */}
+        {isAuthenticated && userTestDrives.length > 0 && (
+          <Box sx={{ mb: 8 }}>
+            <Paper 
+              elevation={3} 
+              sx={{ 
+                p: 4, 
+                borderRadius: '12px',
+                background: 'linear-gradient(to right, rgba(255, 40, 0, 0.1), rgba(255, 40, 0, 0.05))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,40,0,0.2)',
+              }}
+            >
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
+                Ваши предстоящие тест-драйвы
+              </Typography>
+              
+              <Divider sx={{ mb: 3, borderColor: 'rgba(255,255,255,0.1)' }} />
+              
+              <Grid container spacing={2}>
+                {userTestDrives.filter(td => td.status === 'pending' || td.status === 'confirmed')
+                .slice(0, 2).map((testDrive) => (
+                  <Grid item xs={12} md={6} key={testDrive.id}>
+                    <Paper
+                      sx={{
+                        p: 2,
+                        backgroundColor: 'rgba(0,0,0,0.3)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <DirectionsCarIcon sx={{ color: '#FF2800', mr: 1 }} />
+                        <Typography variant="h6" component="div">
+                          {testDrive.Car?.brand} {testDrive.Car?.model}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <Chip 
+                          label={testDrive.status === 'confirmed' ? 'Подтверждено' : 'Ожидает подтверждения'} 
+                          size="small"
+                          color={testDrive.status === 'confirmed' ? 'success' : 'warning'}
+                          sx={{ mr: 1 }}
+                        />
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                          {formatTestDriveDate(testDrive.scheduledDate)}
+                        </Typography>
+                      </Box>
+                      
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          borderColor: 'rgba(255,255,255,0.3)',
+                          color: 'white',
+                          '&:hover': {
+                            borderColor: '#FF2800',
+                            color: '#FF2800'
+                          }
+                        }}
+                        component={Link}
+                        to="/account"
+                      >
+                        Подробнее
+                      </Button>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+          </Box>
+        )}
         
         {/* Правила и FAQ */}
         <Grid container spacing={4} sx={{ mb: 8 }}>
@@ -580,31 +748,58 @@ const TestDrive = () => {
             >
               <Box sx={{ position: 'relative', zIndex: 1 }}>
                 <Typography variant="h3" gutterBottom fontWeight="bold">
-                  Готовы ощутить мощь Ferrari?
+                  {isAuthenticated ? 'Готовы ощутить мощь Ferrari?' : 'Войдите, чтобы записаться на тест-драйв'}
                 </Typography>
                 <Typography variant="h6" sx={{ maxWidth: '800px', mx: 'auto', mb: 4, fontWeight: 300 }}>
-                  Запишитесь на тест-драйв сегодня и испытайте непревзойденное удовольствие от вождения легендарных автомобилей
+                  {isAuthenticated 
+                    ? 'Запишитесь на тест-драйв сегодня и испытайте непревзойденное удовольствие от вождения легендарных автомобилей'
+                    : 'Для записи на тест-драйв необходимо войти в личный кабинет. Это займет всего несколько минут.'
+                  }
                 </Typography>
-                <Button
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    bgcolor: 'white',
-                    color: '#FF2800',
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 'bold',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.9)'
-                    }
-                  }}
-                  onClick={() => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                >
-                  Записаться сейчас
-                </Button>
+                {isAuthenticated ? (
+                  <Button
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      bgcolor: 'white',
+                      color: '#FF2800',
+                      px: 4,
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold',
+                      mr: { xs: 0, sm: 2 },
+                      mb: { xs: 2, sm: 0 },
+                      '&:hover': {
+                        bgcolor: 'rgba(255,255,255,0.9)'
+                      }
+                    }}
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
+                    Выбрать автомобиль
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<LoginIcon />}
+                    sx={{
+                      bgcolor: 'white',
+                      color: '#FF2800',
+                      px: 4,
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold',
+                      '&:hover': {
+                        bgcolor: 'rgba(255,255,255,0.9)'
+                      }
+                    }}
+                    onClick={handleLoginRedirect}
+                  >
+                    Войти в систему
+                  </Button>
+                )}
               </Box>
             </Paper>
           </motion.div>

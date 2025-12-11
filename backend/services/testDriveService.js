@@ -1,4 +1,5 @@
 const { TestDrive, User, Car } = require('../models');
+const { Op } = require('sequelize');
 
 class TestDriveService {
   async createTestDrive(data) {
@@ -118,6 +119,65 @@ class TestDriveService {
     }
     
     return await TestDrive.findAll(options);
+  }
+  
+  async getAvailableTimes(date, carId) {
+    // All possible time slots (10:00 to 18:00 with 1-hour intervals)
+    const allTimeSlots = [
+      '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+    ];
+    
+    // Parse the date
+    const selectedDate = new Date(date);
+    const startOfDay = new Date(selectedDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(selectedDate.setHours(23, 59, 59, 999));
+    
+    // Get all test drives for this car on the selected date
+    const existingTestDrives = await TestDrive.findAll({
+      where: {
+        carId,
+        status: ['pending', 'confirmed'], // Only consider pending or confirmed test drives
+        scheduledDate: {
+          [Op.between]: [startOfDay, endOfDay]
+        }
+      },
+      attributes: ['scheduledDate', 'duration']
+    });
+    
+    // Create a set of unavailable time slots
+    const unavailableTimeSlots = new Set();
+    
+    // Mark time slots as unavailable if they conflict with existing test drives
+    existingTestDrives.forEach(testDrive => {
+      const testDriveHour = new Date(testDrive.scheduledDate).getHours();
+      const duration = testDrive.duration || 60; // Default to 60 minutes if not specified
+      
+      // Mark the slot of the test drive as unavailable
+      unavailableTimeSlots.add(`${testDriveHour}:00`);
+      
+      // Also mark the next slot as unavailable if the test drive extends into it
+      if (duration > 60) {
+        unavailableTimeSlots.add(`${testDriveHour + 1}:00`);
+      }
+    });
+    
+    // Check if the date is today
+    const today = new Date();
+    const isToday = today.toDateString() === selectedDate.toDateString();
+    
+    let availableTimeSlots = allTimeSlots.filter(timeSlot => {
+      const [hours] = timeSlot.split(':').map(Number);
+      
+      // If the date is today, only show future time slots
+      if (isToday && hours <= today.getHours()) {
+        return false;
+      }
+      
+      // Filter out unavailable time slots
+      return !unavailableTimeSlots.has(`${hours}:00`);
+    });
+    
+    return availableTimeSlots;
   }
 }
 

@@ -906,119 +906,119 @@ const CarDetails = () => {
           }}
         />
         
-        {/* Back button and title */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/catalog')}
-            sx={{ 
-              color: 'white',
-              borderRadius: '6px', // Унифицируем радиус скругления
-              '&:hover': {
-                color: '#FF2800'
-              }
-            }}
-          >
-            Вернуться к каталогу
-          </Button>
-          
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <IconButton 
-              onClick={handleToggleFavorite}
-              sx={{ 
-                color: isFavorite ? '#FF2800' : 'white',
-                '&:hover': {
-                  color: '#FF2800'
-                }
-              }}
-              aria-label={isFavorite ? "Удалить из избранного" : "Добавить в избранное"}
-            >
-              {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-            </IconButton>
-            
-            <IconButton 
-              onClick={handleShare}
-              sx={{ 
-                color: 'white',
-                '&:hover': {
-                  color: '#FF2800'
-                }
-              }}
-              aria-label="Поделиться"
-            >
-              <ShareIcon />
-            </IconButton>
-          </Box>
-        </Box>
-        
-        {/* Car title and price */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="overline" sx={{ color: '#FF2800', letterSpacing: 2 }}>
-            {car.brand}
-          </Typography>
-          
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            sx={{ 
-              fontWeight: 700,
-              mb: 1,
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-            }}
-          >
-            {car.model} {car.specialSeries ? `${car.specialSeries}` : ''}
-          </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-            <Chip 
-              label={formatPrice(car.price)} 
-              sx={{ 
-                backgroundColor: '#FF2800',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '1.1rem',
-                height: 40,
-                borderRadius: '6px', // Унифицируем радиус скругления
-                '& .MuiChip-icon': {
-                  color: 'white'
-                }
-              }}
-            />
-            
-            {car.mileage !== undefined && (
-              <Chip 
-                icon={<SpeedIcon />} 
-                label={`${car.mileage.toLocaleString()} км`} 
-                variant="outlined" 
+          {/* Back button and title */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+              <Button
+                startIcon={<ArrowBackIcon />}
+                onClick={() => navigate('/catalog')}
                 sx={{ 
-                  borderColor: 'rgba(255,255,255,0.3)',
+                  color: 'white',
+              borderRadius: '6px', // Унифицируем радиус скругления
+                  '&:hover': {
+                    color: '#FF2800'
+                  }
+                }}
+              >
+                Вернуться к каталогу
+              </Button>
+              
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton 
+                  onClick={handleToggleFavorite}
+                  sx={{ 
+                    color: isFavorite ? '#FF2800' : 'white',
+                    '&:hover': {
+                      color: '#FF2800'
+                    }
+                  }}
+              aria-label={isFavorite ? "Удалить из избранного" : "Добавить в избранное"}
+                >
+                  {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                </IconButton>
+                
+                <IconButton 
+                  onClick={handleShare}
+                  sx={{ 
+                    color: 'white',
+                    '&:hover': {
+                      color: '#FF2800'
+                    }
+                  }}
+              aria-label="Поделиться"
+                >
+                  <ShareIcon />
+                </IconButton>
+              </Box>
+            </Box>
+          
+          {/* Car title and price */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="overline" sx={{ color: '#FF2800', letterSpacing: 2 }}>
+            {car.brand}
+              </Typography>
+              
+              <Typography 
+                variant="h3" 
+                component="h1" 
+                sx={{ 
+                  fontWeight: 700,
+                  mb: 1,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                }}
+              >
+            {car.model} {car.specialSeries ? `${car.specialSeries}` : ''}
+              </Typography>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <Chip 
+                  label={formatPrice(car.price)} 
+                  sx={{ 
+                    backgroundColor: '#FF2800',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: '1.1rem',
+                    height: 40,
+                borderRadius: '6px', // Унифицируем радиус скругления
+                    '& .MuiChip-icon': {
+                      color: 'white'
+                    }
+                  }}
+                />
+                
+            {car.mileage !== undefined && (
+                <Chip 
+                  icon={<SpeedIcon />} 
+                label={`${car.mileage.toLocaleString()} км`} 
+                  variant="outlined" 
+                  sx={{ 
+                    borderColor: 'rgba(255,255,255,0.3)',
                   color: 'white',
                   borderRadius: '6px', // Унифицируем радиус скругления
-                }}
-              />
+                  }}
+                />
             )}
-            
-            <Chip 
-              icon={<CalendarMonthIcon />} 
-              label={car.year} 
-              variant="outlined" 
-              sx={{ 
-                borderColor: 'rgba(255,255,255,0.3)',
+                
+                <Chip 
+                  icon={<CalendarMonthIcon />} 
+                  label={car.year} 
+                  variant="outlined" 
+                  sx={{ 
+                    borderColor: 'rgba(255,255,255,0.3)',
                 color: 'white',
                 borderRadius: '6px', // Унифицируем радиус скругления
-              }}
-            />
-            
+                  }}
+                />
+                
             {car.category && (
-              <Chip 
+                <Chip 
                 label={car.category === 'sport' ? 'Sport' : 
                       car.category === 'gt' ? 'GT' : 
                       car.category === 'hypercar' ? 'Hypercar' : 
                       car.category === 'classic' ? 'Classic' : 
                       car.category === 'limited_edition' ? 'Limited Edition' : 
                       car.category} 
-                variant="outlined" 
-                sx={{ 
+                  variant="outlined" 
+                  sx={{ 
                   backgroundColor: 'rgba(255,40,0,0.1)',
                   borderColor: 'rgba(255,40,0,0.3)',
                   color: 'white',
@@ -1026,8 +1026,8 @@ const CarDetails = () => {
                 }}
               />
             )}
-          </Box>
-        </Box>
+              </Box>
+            </Box>
         
         {/* Image gallery */}
         <Grid container spacing={3}>
@@ -1039,14 +1039,14 @@ const CarDetails = () => {
                     src={car.images[currentImageIndex]} 
                     alt={`${car.brand} ${car.model}`}
                     style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover',
-                    }}
-                    onError={(e) => {
-                      e.target.src = '/images/car-placeholder.jpg';
-                    }}
-                  />
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                  onError={(e) => {
+                    e.target.src = '/images/car-placeholder.jpg';
+                  }}
+                />
                 ) : (
                   <img 
                     src="/images/car-placeholder.jpg" 
@@ -1079,55 +1079,55 @@ const CarDetails = () => {
                 >
                   {car.images && car.images.length > 1 && (
                     <>
-                      <IconButton
-                        onClick={handlePrevImage}
-                        sx={{
+                  <IconButton
+                    onClick={handlePrevImage}
+                    sx={{
                           backgroundColor: 'rgba(0,0,0,0.5)',
-                          color: 'white',
-                          '&:hover': {
+                      color: 'white',
+                      '&:hover': {
                             backgroundColor: 'rgba(255,40,0,0.7)',
-                          },
+                      },
                           boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                        }}
+                    }}
                         aria-label="Предыдущее изображение"
-                      >
-                        <ArrowBackIosIcon />
-                      </IconButton>
-                      
-                      <IconButton
-                        onClick={handleNextImage}
-                        sx={{
+                  >
+                    <ArrowBackIosIcon />
+                  </IconButton>
+                  
+                  <IconButton
+                    onClick={handleNextImage}
+                    sx={{
                           backgroundColor: 'rgba(0,0,0,0.5)',
-                          color: 'white',
-                          '&:hover': {
+                      color: 'white',
+                      '&:hover': {
                             backgroundColor: 'rgba(255,40,0,0.7)',
-                          },
+                      },
                           boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                        }}
+                    }}
                         aria-label="Следующее изображение"
-                      >
-                        <ArrowForwardIosIcon />
-                      </IconButton>
+                  >
+                    <ArrowForwardIosIcon />
+                  </IconButton>
                     </>
                   )}
                 </Box>
                 
                 {/* Fullscreen button */}
-                <IconButton
-                  onClick={() => setOpenFullImage(true)}
-                  sx={{
+                  <IconButton
+                    onClick={() => setOpenFullImage(true)}
+                    sx={{
                     position: 'absolute',
                     bottom: 16,
                     right: 16,
                     backgroundColor: 'rgba(0,0,0,0.5)',
-                    color: 'white',
-                    '&:hover': {
+                      color: 'white',
+                      '&:hover': {
                       backgroundColor: 'rgba(255,40,0,0.7)',
-                    },
-                  }}
-                >
-                  <FullscreenIcon />
-                </IconButton>
+                      },
+                    }}
+                  >
+                    <FullscreenIcon />
+                  </IconButton>
                 
                 {/* Image counter */}
                 {car.images && car.images.length > 1 && (
@@ -1259,10 +1259,10 @@ const CarDetails = () => {
                     size="large"
                     startIcon={<EventAvailableIcon />}
                     onClick={handleOpenTestDriveDialog}
-                    sx={{
-                      color: 'white',
+                  sx={{
+                    color: 'white',
                       borderColor: 'rgba(255,40,0,0.7)',
-                      '&:hover': {
+                    '&:hover': {
                         borderColor: '#FF2800',
                         backgroundColor: 'rgba(255,40,0,0.1)',
                       },
@@ -1311,46 +1311,46 @@ const CarDetails = () => {
                 </Box>
               )}
             </StyledPaper>
-          </Grid>
-        </Grid>
+              </Grid>
+            </Grid>
         
         {/* Detailed info tabs */}
         <Box sx={{ mt: 6 }}>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs 
-              value={currentTab} 
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
+              <Tabs
+                value={currentTab}
+                onChange={handleTabChange}
+                variant="scrollable"
+                scrollButtons="auto"
               allowScrollButtonsMobile
               sx={{ 
                 '& .MuiTabs-indicator': {
                   backgroundColor: '#FF2800',
                 }
-              }}
-            >
-              <StyledTab label="Описание" />
-              <StyledTab label="Характеристики" />
-              <StyledTab label="Комплектация" />
-              <StyledTab label="Отзывы" />
-            </Tabs>
-          </Box>
+                }}
+              >
+                <StyledTab label="Описание" />
+                <StyledTab label="Характеристики" />
+                <StyledTab label="Комплектация" />
+                <StyledTab label="Отзывы" />
+              </Tabs>
+            </Box>
           
-          {/* Description tab */}
-          {currentTab === 0 && (
+            {/* Description tab */}
+            {currentTab === 0 && (
             <Box sx={{ p: 3 }}>
               <StyledPaper sx={{ p: 3 }}>
                 {car.description ? (
                   <>
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
                       {car.description}
-                    </Typography>
-                    
+                </Typography>
+                
                     {car.history && (
                       <Box sx={{ mt: 4 }}>
                         <Typography variant="h6" gutterBottom>
                           История автомобиля
-                        </Typography>
+                </Typography>
                         <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
                           {car.history}
                         </Typography>
@@ -1360,58 +1360,58 @@ const CarDetails = () => {
                 ) : (
                   <Typography variant="body1" sx={{ opacity: 0.7, fontStyle: 'italic' }}>
                     Подробное описание данного автомобиля отсутствует.
-                  </Typography>
+                              </Typography>
                 )}
-              </StyledPaper>
-            </Box>
-          )}
-          
-          {/* Specifications tab */}
-          {currentTab === 1 && (
+                      </StyledPaper>
+              </Box>
+            )}
+            
+            {/* Specifications tab */}
+            {currentTab === 1 && (
             <Box sx={{ p: 3 }}>
               <StyledPaper sx={{ p: 3 }}>
                 {renderSpecifications()}
               </StyledPaper>
-            </Box>
-          )}
-          
-          {/* Features tab */}
-          {currentTab === 2 && (
+              </Box>
+            )}
+            
+            {/* Features tab */}
+            {currentTab === 2 && (
             <Box sx={{ p: 3 }}>
               <StyledPaper sx={{ p: 3 }}>
                 {car.exteriorColor && (
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="subtitle1" gutterBottom>
                       Экстерьер
-                    </Typography>
+                        </Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={6}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <ColorLensIcon sx={{ mr: 1, color: 'rgba(255,255,255,0.6)' }} />
                           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
                             Цвет кузова: {car.exteriorColor}
-                          </Typography>
-                        </Box>
-                      </Grid>
+                        </Typography>
+                            </Box>
+                    </Grid>
                       {car.wheels && (
                         <Grid item xs={12} sm={6}>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <DirectionsCarIcon sx={{ mr: 1, color: 'rgba(255,255,255,0.6)' }} />
                             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
                               Колеса: {car.wheels}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      )}
+                        </Typography>
+                            </Box>
                     </Grid>
-                  </Box>
+                      )}
+                  </Grid>
+                            </Box>
                 )}
                 
                 {(car.interiorColor || car.interiorMaterial) && (
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="subtitle1" gutterBottom>
-                      Интерьер
-                    </Typography>
+                          Интерьер
+                        </Typography>
                     <Grid container spacing={2}>
                       {car.interiorColor && (
                         <Grid item xs={12} sm={6}>
@@ -1420,7 +1420,7 @@ const CarDetails = () => {
                             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
                               Цвет салона: {car.interiorColor}
                             </Typography>
-                          </Box>
+                            </Box>
                         </Grid>
                       )}
                       {car.interiorMaterial && (
@@ -1430,8 +1430,8 @@ const CarDetails = () => {
                             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
                               Материал отделки: {car.interiorMaterial}
                             </Typography>
-                          </Box>
-                        </Grid>
+                        </Box>
+                    </Grid>
                       )}
                     </Grid>
                   </Box>
@@ -1441,7 +1441,7 @@ const CarDetails = () => {
                   <Box>
                     <Typography variant="subtitle1" gutterBottom>
                       Опции и особенности
-                    </Typography>
+                        </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {car.features.map((feature, index) => (
                         <FeatureChip 
@@ -1449,8 +1449,8 @@ const CarDetails = () => {
                           label={feature} 
                           icon={<CheckCircleIcon />}
                         />
-                      ))}
-                    </Box>
+                          ))}
+                        </Box>
                   </Box>
                 ) : (
                   <Typography variant="body1" sx={{ opacity: 0.7, fontStyle: 'italic' }}>
@@ -1458,11 +1458,11 @@ const CarDetails = () => {
                   </Typography>
                 )}
               </StyledPaper>
-            </Box>
-          )}
-          
-          {/* Reviews tab */}
-          {currentTab === 3 && (
+              </Box>
+            )}
+            
+            {/* Reviews tab */}
+            {currentTab === 3 && (
             <Box sx={{ p: 3 }}>
               <StyledPaper sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -1472,7 +1472,7 @@ const CarDetails = () => {
                   <Button
                     startIcon={<AddCommentIcon />}
                     onClick={() => setReviewDialogOpen(true)}
-                    sx={{
+                              sx={{
                       color: 'white',
                       borderRadius: '6px', // Унифицируем радиус скругления
                       '&:hover': {
@@ -1483,8 +1483,8 @@ const CarDetails = () => {
                   >
                     Оставить отзыв
                   </Button>
-                </Box>
-                
+                          </Box>
+                          
                 {reviews.length > 0 ? (
                   <Stack spacing={3}>
                     {reviews.map((review, index) => (
@@ -1512,25 +1512,25 @@ const CarDetails = () => {
                         
                         {(review.pros || review.cons) && (
                           <Grid container spacing={2}>
-                            {review.pros && (
+                        {review.pros && (
                               <Grid item xs={12} sm={6}>
                                 <Typography variant="caption" color="#4CAF50" gutterBottom>
-                                  Достоинства:
-                                </Typography>
-                                <Typography variant="body2">
-                                  {review.pros}
-                                </Typography>
+                              Достоинства:
+                            </Typography>
+                            <Typography variant="body2">
+                              {review.pros}
+                            </Typography>
                               </Grid>
-                            )}
-                            
-                            {review.cons && (
+                        )}
+                        
+                        {review.cons && (
                               <Grid item xs={12} sm={6}>
                                 <Typography variant="caption" color="#FF5252" gutterBottom>
-                                  Недостатки:
-                                </Typography>
-                                <Typography variant="body2">
-                                  {review.cons}
-                                </Typography>
+                              Недостатки:
+                            </Typography>
+                            <Typography variant="body2">
+                              {review.cons}
+                            </Typography>
                               </Grid>
                             )}
                           </Grid>
@@ -1539,7 +1539,7 @@ const CarDetails = () => {
                         <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                           {new Date(review.createdAt).toLocaleDateString('ru-RU')}
                         </Typography>
-                      </Box>
+                  </Box>
                     ))}
                   </Stack>
                 ) : (
@@ -1551,23 +1551,23 @@ const CarDetails = () => {
                   </Box>
                 )}
               </StyledPaper>
-            </Box>
-          )}
+              </Box>
+            )}
         </Box>
-        
-        {/* Similar cars section */}
-        {similarCars.length > 0 && (
+          
+          {/* Similar cars section */}
+          {similarCars.length > 0 && (
           <Box sx={{ mt: 6 }}>
             <Typography variant="h5" gutterBottom>
-              Похожие автомобили
-            </Typography>
+                  Похожие автомобили
+                </Typography>
             <Grid container spacing={3}>
-              {similarCars.map((similarCar) => (
-                <Grid item xs={12} sm={6} md={3} key={similarCar.id}>
-                  <StyledPaper 
+                  {similarCars.map((similarCar) => (
+                    <Grid item xs={12} sm={6} md={3} key={similarCar.id}>
+                      <StyledPaper
                     component={Link} 
                     to={`/car/${similarCar.id}`}
-                    sx={{ 
+                        sx={{
                       p: 0, 
                       display: 'block', 
                       textDecoration: 'none',
@@ -1575,42 +1575,42 @@ const CarDetails = () => {
                     }}
                   >
                     <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
-                      <Box 
-                        component="img"
+                          <Box
+                            component="img"
                         src={similarCar.mainImage || (similarCar.images && similarCar.images.length > 0 ? similarCar.images[0] : '/images/car-placeholder.jpg')}
                         alt={`${similarCar.brand} ${similarCar.model}`}
                         onError={(e) => {
                           e.target.src = '/images/car-placeholder.jpg';
                         }}
-                        sx={{
+                            sx={{
                           position: 'absolute',
                           top: 0,
                           left: 0,
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </Box>
-                    <Box sx={{ p: 2 }}>
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                            }}
+                          />
+                        </Box>
+                        <Box sx={{ p: 2 }}>
                       <Typography variant="h6" sx={{ mb: 1 }}>
                         {similarCar.brand} {similarCar.model}
-                      </Typography>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2" color="text.secondary">
                           {similarCar.year} • {similarCar.mileage ? `${similarCar.mileage.toLocaleString()} км` : 'Новый'}
-                        </Typography>
+                            </Typography>
                         <Typography variant="subtitle2" color="#FF2800" fontWeight="bold">
-                          {formatPrice(similarCar.price)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </StyledPaper>
+                              {formatPrice(similarCar.price)}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </StyledPaper>
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
+              </Box>
+          )}
       </Container>
       
       {/* Full-size image viewer dialog */}
@@ -1652,7 +1652,7 @@ const CarDetails = () => {
               position: 'absolute',
               top: 8,
               right: 8,
-              color: 'white',
+            color: 'white',
               bgcolor: 'rgba(0,0,0,0.5)',
               '&:hover': {
                 bgcolor: 'rgba(255,40,0,0.7)',
@@ -1666,7 +1666,7 @@ const CarDetails = () => {
             <>
               <IconButton
                 onClick={handlePrevImage}
-                sx={{
+            sx={{
                   position: 'absolute',
                   top: '50%',
                   left: 16,
@@ -2051,7 +2051,7 @@ const CarDetails = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* Review dialog */}
       <Dialog 
         open={reviewDialogOpen} 

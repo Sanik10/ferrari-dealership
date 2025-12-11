@@ -18,6 +18,7 @@ const contactRoutes = require('./routes/contactRoutes');
 const serviceAppointmentRoutes = require('./routes/serviceAppointmentRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 const { carUploader, handleUploadError } = require('./middleware/uploadMiddleware');
 const carController = require('./controllers/carController');
 
@@ -89,6 +90,7 @@ app.use('/api/service', serviceAppointmentRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/stats', statsRoutes);
 
 app.post('/api/users/register-manager', async (req, res) => {
   try {
@@ -195,4 +197,4 @@ async function startServer() {
 
 startServer();
 
-module.exports = app; // Для тестирования
+module.exports = app;

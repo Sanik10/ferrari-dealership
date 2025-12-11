@@ -89,6 +89,22 @@ class TestDriveController {
       res.status(500).json({ error: error.message });
     }
   }
+  
+  async getAvailableTimeSlots(req, res) {
+    try {
+      const { date, carId } = req.query;
+      
+      if (!date || !carId) {
+        return res.status(400).json({ error: 'Требуется указать дату и ID автомобиля' });
+      }
+      
+      const availableTimes = await testDriveService.getAvailableTimes(date, carId);
+      res.json(availableTimes);
+    } catch (error) {
+      console.error('Get available time slots error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new TestDriveController(); 

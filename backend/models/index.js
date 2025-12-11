@@ -79,11 +79,6 @@ const createEnumTypes = async () => {
 
 const syncDatabase = async (force = false) => {
   try {
-    // await createEnumTypes();
-    
-    // force: true - удаляет все таблицы и создает их заново
-    // alter: true - вносит изменения в таблицы, сохраняя данные
-    // При force: true мы полностью пересоздаем базу данных
     const options = { force: false };
     
     await sequelize.sync(options);
@@ -123,18 +118,7 @@ EventRegistration.belongsTo(Event, { foreignKey: 'eventId' });
 
 // Синхронизируем с базой данных
 console.log("Синхронизация моделей с базой данных...");
-// Для разработки можно использовать { force: true } чтобы пересоздать таблицы,
-// но для продакшена нужно использовать { alter: true } или просто sync()
-// Убираем автоматическую синхронизацию, так как она выполняется в app.js
-/*
-sequelize.sync({ alter: true })
-  .then(() => {
-    console.log("Все модели успешно синхронизированы с базой данных.");
-  })
-  .catch(err => {
-    console.error("Ошибка при синхронизации с базой данных:", err);
-  });
-*/
+
 
 module.exports = {
   sequelize,

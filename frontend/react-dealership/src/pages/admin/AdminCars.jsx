@@ -32,6 +32,9 @@ import {
   TablePagination,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import axios from 'axios';
+import { useAuth } from '../../contexts/AuthContext';
+import { API_URL } from '../../config';
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -115,44 +118,37 @@ const AdminCars = () => {
     { value: 'limited_edition', label: 'Limited Edition' }
   ];
   
+  const { user } = useAuth();
+  
   // Fetch cars on component mount
   useEffect(() => {
     console.log("AdminCars компонент загружен");
-    const user = JSON.parse(localStorage.getItem('user'));
     console.log("AdminCars - Пользователь:", user);
     console.log("AdminCars - Роль пользователя:", user?.role);
     
-    fetchCars();
-  }, []);
-  
-  // Fetch cars from API
-  const fetchCars = async () => {
-    try {
+    const fetchCars = async () => {
       setLoading(true);
-      const response = await carAPI.getAllCars();
-      console.log("Response from getAllCars:", response);
-      
-      if (response) {
-        // Проверяем формат ответа
-        if (Array.isArray(response)) {
-          setCars(response);
-        } else if (response.data && Array.isArray(response.data)) {
-          setCars(response.data);
-        } else {
-          console.error('Неожиданный формат ответа API:', response);
-          setCars([]);
+      try {
+        const response = await axios.get(`${API_URL}/api/cars`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        
+        setCars(response.data || []);
+        
+        // Сохраняем количество автомобилей для админ-панели
+        if (response.data && Array.isArray(response.data)) {
+          localStorage.setItem('carsCount', response.data.length.toString());
         }
-      } else {
-        setCars([]);
+      } catch (error) {
+        console.error('Ошибка при загрузке автомобилей:', error);
+        // Можно будет добавить контекст уведомлений позже
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching cars:', error);
-      setError('Не удалось загрузить автомобили. Пожалуйста, попробуйте позже.');
-      setCars([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    
+    fetchCars();
+  }, [user]);
   
   // Handle dialog open for adding a car
   const handleAddCarClick = () => {
@@ -436,7 +432,7 @@ const AdminCars = () => {
   return (
     <Container maxWidth="xl">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
+        <Typography variant="h4" component="h1" color="primary.contrastText">
           Управление автомобилями
         </Typography>
         <Button
@@ -469,9 +465,10 @@ const AdminCars = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   height: 240,
+                  bgcolor: 'background.paper',
                 }}
               >
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom color="text.primary">
                   {car.brand} {car.model}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
@@ -490,8 +487,8 @@ const AdminCars = () => {
           ))}
         </Grid>
       ) : (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h6" gutterBottom>
+        <Paper sx={{ p: 4, textAlign: 'center', bgcolor: 'background.paper' }}>
+          <Typography variant="h6" gutterBottom color="text.primary">
             Автомобили не найдены
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
