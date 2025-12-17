@@ -54,7 +54,9 @@ import EastIcon from '@mui/icons-material/East';
 import FilterListIcon from '@mui/icons-material/FilterList';
 
 // API
-import { eventAPI } from '../services/api';
+import { eventAPI, apiUtils } from '../services/api';
+
+const BACKEND_URL = apiUtils.API_URL.replace(/\/api$/, '');
 
 // Custom styled components
 const StyledEventCard = styled(Card)(({ theme }) => ({
@@ -103,6 +105,32 @@ const eventTypes = [
   { type: 'exclusive', label: 'VIP мероприятия', icon: <EmojiEventsIcon /> }
 ];
 
+const mapBackendTypeToUi = (backendType) => {
+  switch (backendType) {
+    case 'car_launch':
+      return 'presentation';
+    case 'track_day':
+      return 'race';
+    case 'driving_experience':
+      return 'testdrive';
+    case 'gala_dinner':
+      return 'social';
+    case 'exhibition':
+      return 'presentation'; // или 'social' — как тебе логичнее
+    case 'vip_tour':
+    default:
+      return 'exclusive';
+  }
+};
+
+const getEventImageSrc = (event) => {
+  if (event.imageUrl) {
+    if (event.imageUrl.startsWith('http')) return event.imageUrl;
+    return `${BACKEND_URL}${event.imageUrl}`;
+  }
+  return '/images/default-event.jpg';
+};
+
 const Events = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -139,18 +167,36 @@ const Events = () => {
       try {
         setLoading(true);
         const response = await eventAPI.getEvents();
-        
+
         if (response.data) {
-          // Get current date for separating future and past events
+          const rawEvents = response.data;
+
+          // Нормализуем backend → UI
+          const normalized = rawEvents.map(ev => ({
+            ...ev,
+            title: ev.name,
+            date: ev.eventDate,                   // здесь eventDate
+            type: mapBackendTypeToUi(ev.eventType),
+            imageUrl: ev.image || '',
+            featured: !!ev.vipOnly,
+          }));
+
           const now = new Date();
-          
-          // Filter events by date
-          const futureEvents = response.data.filter(event => new Date(event.date) >= now);
-          const past = response.data.filter(event => new Date(event.date) < now);
-          
-          // Get featured events (either marked as featured or take first 2)
+
+          const futureEvents = normalized.filter(event => {
+            if (!event.date) return false;
+            const d = new Date(event.date);
+            return !isNaN(d) && d >= now;
+          });
+
+          const past = normalized.filter(event => {
+            if (!event.date) return false;
+            const d = new Date(event.date);
+            return !isNaN(d) && d < now;
+          });
+
           const featured = futureEvents.filter(event => event.featured) || futureEvents.slice(0, 2);
-          
+
           setEvents(futureEvents);
           setFeaturedEvents(featured);
           setPastEvents(past);
@@ -172,10 +218,11 @@ const Events = () => {
     const typeMatches = selectedType === 'all' || event.type === selectedType;
     
     // Then by search query
-    const searchMatches = searchQuery === '' || 
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchMatches =
+    searchQuery === '' ||
+    (event.title && event.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (event.description && event.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (event.location && event.location.toLowerCase().includes(searchQuery.toLowerCase()));
     
     return typeMatches && searchMatches;
   });
@@ -388,7 +435,7 @@ const Events = () => {
                     <StyledEventBanner
                       sx={{
                         height: { xs: 240, md: index === 0 ? 400 : 400 },
-                        backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%), url(${event.imageUrl})`
+                        backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%), url(${getEventImageSrc(event)})`
                       }}
                     >
                       <Box sx={{ p: 3, position: 'absolute', bottom: 0, width: '100%' }}>
@@ -589,7 +636,7 @@ const Events = () => {
                           <CardMedia
                             component="img"
                             height="200"
-                            image={event.imageUrl || '/images/default-event.jpg'}
+                            image={getEventImageSrc(event)}
                             alt={event.title}
                           />
                           <CardContent sx={{ flexGrow: 1 }}>
@@ -602,7 +649,7 @@ const Events = () => {
                               />
                             </Box>
                             
-                            <Typography gutterBottom variant="h5" component="div" fontWeight="bold">
+                            <Typography gutterBottom variant="h5" component="div" fontWeight="bold" sx={{ color: 'rgba(255,255,255)' }}>
                               {event.title}
                             </Typography>
                             
@@ -683,7 +730,7 @@ const Events = () => {
                         <CardMedia
                           component="img"
                           height="160"
-                          image={event.imageUrl || '/images/default-event.jpg'}
+                          image={getEventImageSrc(event)}
                           alt={event.title}
                           sx={{ filter: 'grayscale(0.5)' }}
                         />
@@ -763,14 +810,14 @@ const Events = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <DirectionsCarIcon sx={{ color: '#FF2800', fontSize: 30, mr: 2 }} />
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography variant="h6" fontWeight="bold" sx={{ color: 'rgba(255,255,255)' }}>
                     Презентации и премьеры
                   </Typography>
                 </Box>
-                <Typography variant="body2" paragraph sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                <Typography variant="body2" paragraph sx={{ color: 'rgba(255,255,255)' }}>
                   Эксклюзивные презентации новых моделей Ferrari. Будьте первыми, кто увидит и оценит революционный дизайн и инновационные технические решения.
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255)' }}>
                   Наши презентации — это не просто демонстрация автомобилей, а настоящее шоу с участием специальных гостей, прямыми включениями с Маранелло и персональным знакомством с каждой деталью новой модели.
                 </Typography>
               </Paper>
@@ -789,7 +836,7 @@ const Events = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <SportsScoreIcon sx={{ color: '#FF2800', fontSize: 30, mr: 2 }} />
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography variant="h6" fontWeight="bold" sx={{ color: 'rgba(255,255,255)' }}>
                     Гоночные события
                   </Typography>
                 </Box>
@@ -815,7 +862,7 @@ const Events = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <LocalBarIcon sx={{ color: '#FF2800', fontSize: 30, mr: 2 }} />
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography variant="h6" fontWeight="bold" sx={{ color: 'rgba(255,255,255)' }}>
                     Светские события
                   </Typography>
                 </Box>
@@ -841,7 +888,7 @@ const Events = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <EmojiEventsIcon sx={{ color: '#FF2800', fontSize: 30, mr: 2 }} />
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography variant="h6" fontWeight="bold" sx={{ color: 'rgba(255,255,255)' }}>
                     VIP мероприятия
                   </Typography>
                 </Box>
@@ -978,7 +1025,7 @@ const Events = () => {
               size="large"
               sx={{
                 bgcolor: 'white',
-                color: '#FF2800',
+                color: '#000000ff',
                 px: 4,
                 py: 1.5,
                 fontSize: '1.1rem',

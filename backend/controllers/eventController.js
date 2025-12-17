@@ -4,28 +4,52 @@ const { eventUploader } = require('../middleware/uploadMiddleware');
 class EventController {
   async createEvent(req, res) {
     try {
+      console.log('=== CREATE EVENT ===');
+      console.log('BODY:', req.body);
+      console.log('FILE:', req.file);
+
+      // Путь к файлу, если он загружен
+      const imagePath = req.file
+        ? `/uploads/events/${req.file.filename}`
+        : null;
+
+      const capacity = req.body.capacity ? parseInt(req.body.capacity, 10) : null;
+      const eventDate = req.body.eventDate ? new Date(req.body.eventDate) : null;
+      const registrationDeadline = req.body.registrationDeadline
+        ? new Date(req.body.registrationDeadline)
+        : null;
+
       const eventData = {
         name: req.body.name,
         description: req.body.description,
-        eventDate: req.body.eventDate,
+        eventDate,              // Date-объект или null
         location: req.body.location,
-        capacity: req.body.capacity,
+        capacity,
         eventType: req.body.eventType,
-        image: req.body.image,
+        image: imagePath,       // ВАЖНО: путь из req.file
         vipOnly: req.body.vipOnly === 'true' || req.body.vipOnly === true,
-        registrationDeadline: req.body.registrationDeadline
+        registrationDeadline,
+        status: 'upcoming'
       };
-      
+
       // Проверяем наличие обязательных полей
-      if (!eventData.name || !eventData.description || !eventData.eventDate || 
+      if (!eventData.name || !eventData.description || !eventData.eventDate ||
           !eventData.location || !eventData.capacity || !eventData.eventType) {
-        return res.status(400).json({ 
-          error: "Все обязательные поля должны быть заполнены (name, description, eventDate, location, capacity, eventType)" 
+        console.log('❌ Missing required fields in eventData:', eventData);
+        return res.status(400).json({
+          error: "Все обязательные поля должны быть заполнены (name, description, eventDate, location, capacity, eventType)"
         });
       }
-      
+
       const event = await eventService.createEvent(eventData);
-      
+
+      console.log('✅ Event created:', {
+        id: event.id,
+        name: event.name,
+        image: event.image,
+        eventDate: event.eventDate
+      });
+
       res.status(201).json({
         message: "Мероприятие успешно создано",
         event
@@ -48,8 +72,16 @@ class EventController {
   
   async updateEvent(req, res) {
     try {
-      const event = await eventService.updateEvent(req.params.id, req.body);
-      
+      // Если пришёл новый файл — формируем новый путь
+      let updateData = { ...req.body };
+
+      if (req.file) {
+        const imagePath = `/uploads/events/${req.file.filename}`;
+        updateData.image = imagePath;
+      }
+
+      const event = await eventService.updateEvent(req.params.id, updateData);
+
       res.json({
         message: "Мероприятие успешно обновлено",
         event

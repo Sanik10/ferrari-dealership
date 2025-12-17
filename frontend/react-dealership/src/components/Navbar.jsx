@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { 
-  AppBar, Toolbar, Typography, Button, Box, Avatar, 
-  Menu, MenuItem, IconButton, Drawer, List, ListItem, 
-  ListItemText, useMediaQuery, useTheme, ListItemIcon, Divider 
+import {
+  AppBar, Toolbar, Typography, Button, Box, Avatar,
+  Menu, MenuItem, IconButton, Drawer, List, ListItem,
+  ListItemText, useMediaQuery, useTheme, ListItemIcon, Divider
 } from '@mui/material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -13,19 +13,19 @@ import { useAuth } from '../contexts/AuthContext';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const Navbar = () => {
   const [authOpen, setAuthOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [servicesMenuAnchorEl, setServicesMenuAnchorEl] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
   const { isAuthenticated, currentUser, logout } = useAuth();
 
-  // Close mobile menu when location changes
   useEffect(() => {
     setMobileOpen(false);
   }, [location]);
@@ -43,10 +43,17 @@ const Navbar = () => {
     setAnchorEl(null);
   };
 
+  const handleServicesMenuClick = (event) => {
+    setServicesMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleServicesMenuClose = () => {
+    setServicesMenuAnchorEl(null);
+  };
+
   const navItems = [
     { label: 'Каталог', path: '/catalog' },
     { label: 'Тест-драйв', path: '/test-drive' },
-    { label: 'Услуги', path: '/services' },
     { label: 'О нас', path: '/about' },
     { label: 'Контакты', path: '/contact' }
   ];
@@ -57,8 +64,8 @@ const Navbar = () => {
       open={mobileOpen}
       onClose={() => setMobileOpen(false)}
       sx={{
-        '& .MuiDrawer-paper': { 
-          width: '70%', 
+        '& .MuiDrawer-paper': {
+          width: '70%',
           background: 'linear-gradient(to bottom, #000000, #1a1a1a)',
           color: 'white'
         },
@@ -71,30 +78,43 @@ const Navbar = () => {
       </Box>
       <List>
         {navItems.map((item) => (
-          <ListItem 
-            button 
-            component={Link} 
-            to={item.path} 
+          <ListItem
+            button
+            component={Link}
+            to={item.path}
             key={item.path}
-            sx={{ 
+            sx={{
               borderBottom: '1px solid rgba(255,255,255,0.1)',
-              py: 2 
+              py: 2
             }}
           >
-            <ListItemText 
-              primary={item.label} 
-              sx={{ 
+            <ListItemText
+              primary={item.label}
+              sx={{
                 color: location.pathname === item.path ? 'primary.main' : 'white',
-                textAlign: 'center' 
-              }} 
+                textAlign: 'center'
+              }}
             />
           </ListItem>
         ))}
+        <ListItem button onClick={handleServicesMenuClick} sx={{ py: 2 }}>
+          <ListItemText primary="Услуги" sx={{ color: 'white', textAlign: 'center' }} />
+        </ListItem>
       </List>
+      <Menu
+        id="services-menu-mobile"
+        anchorEl={servicesMenuAnchorEl}
+        keepMounted
+        open={Boolean(servicesMenuAnchorEl)}
+        onClose={handleServicesMenuClose}
+      >
+        <MenuItem onClick={handleServicesMenuClose} component={Link} to="/events">Эвенты</MenuItem>
+        <MenuItem onClick={handleServicesMenuClose} component={Link} to="/service">Сервисная карточка</MenuItem>
+        <MenuItem onClick={handleServicesMenuClose} component={Link} to="/vip-services">VIP Услуги</MenuItem>
+      </Menu>
     </Drawer>
   );
 
-  // User menu (if authenticated)
   const userMenu = (
     <>
       <IconButton
@@ -154,13 +174,9 @@ const Navbar = () => {
           </ListItemIcon>
           Мой профиль
         </MenuItem>
-        
         {currentUser?.role === 'admin' && (
           <MenuItem onClick={() => {
             handleMenuClose();
-            console.log("Нажата кнопка Админ-панель");
-            console.log("Роль пользователя:", currentUser?.role);
-            console.log("Перенаправление на /admin");
             navigate('/admin');
           }}>
             <ListItemIcon>
@@ -169,9 +185,7 @@ const Navbar = () => {
             Админ-панель
           </MenuItem>
         )}
-        
         <Divider sx={{ my: 0.5, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-        
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon sx={{ color: 'white' }} />
@@ -184,8 +198,8 @@ const Navbar = () => {
 
   return (
     <>
-      <AppBar 
-        position="fixed" 
+      <AppBar
+        position="fixed"
         sx={{
           background: 'linear-gradient(to right, #000000, #1a1a1a)',
           backdropFilter: 'blur(10px)',
@@ -194,8 +208,8 @@ const Navbar = () => {
         }}
       >
         <Toolbar>
-          <Box 
-            component={Link} 
+          <Box
+            component={Link}
             to="/"
             sx={{
               flexGrow: 1,
@@ -204,10 +218,10 @@ const Navbar = () => {
               textDecoration: 'none',
             }}
           >
-            <img 
-              src={ferrariLogo} 
-              alt="Ferrari Logo" 
-              style={{ height: 40, marginRight: 10 }} 
+            <img
+              src={ferrariLogo}
+              alt="Ferrari Logo"
+              style={{ height: 40, marginRight: 10 }}
             />
             <Typography
               variant="h6"
@@ -222,16 +236,15 @@ const Navbar = () => {
               FERRARI MOSCOW
             </Typography>
           </Box>
-          
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {navItems.map((item) => (
-                <Button 
+                <Button
                   key={item.path}
-                  color="inherit" 
-                  component={Link} 
+                  color="inherit"
+                  component={Link}
                   to={item.path}
-                  sx={{ 
+                  sx={{
                     color: 'white',
                     position: 'relative',
                     '&:after': {
@@ -252,46 +265,64 @@ const Navbar = () => {
                   {item.label}
                 </Button>
               ))}
+              <Box>
+                <Button
+                  aria-controls="services-menu"
+                  aria-haspopup="true"
+                  onClick={handleServicesMenuClick}
+                  sx={{ color: 'white', mx: 1.5 }}
+                  endIcon={<ArrowDropDownIcon />}
+                >
+                  Услуги
+                </Button>
+                <Menu
+                  id="services-menu"
+                  anchorEl={servicesMenuAnchorEl}
+                  keepMounted
+                  open={Boolean(servicesMenuAnchorEl)}
+                  onClose={handleServicesMenuClose}
+                >
+                  <MenuItem onClick={handleServicesMenuClose} component={Link} to="/events">Эвенты</MenuItem>
+                  <MenuItem onClick={handleServicesMenuClose} component={Link} to="/service">Сервисная карточка</MenuItem>
+                  <MenuItem onClick={handleServicesMenuClose} component={Link} to="/vip-services">VIP Услуги</MenuItem>
+                </Menu>
+              </Box>
             </Box>
           )}
-
           <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
             {isAuthenticated ? (
               userMenu
             ) : (
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={() => setAuthOpen(true)}
                 sx={{
                   backgroundImage: 'linear-gradient(45deg, #FF2800, #FF4D4D)',
                   color: 'white',
                   px: 3,
-                  py: 1,
                   fontWeight: 'bold',
-                  '&:hover': {
-                    backgroundImage: 'linear-gradient(45deg, #FF4D4D, #FF2800)',
-                  }
+                  fontFamily: "'Montserrat', sans-serif"
                 }}
               >
                 Войти
               </Button>
             )}
-            
-            {isMobile && (
-              <IconButton 
-                color="inherit" 
-                aria-label="menu"
-                onClick={() => setMobileOpen(true)} 
-                sx={{ ml: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
           </Box>
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              edge="end"
+              onClick={() => setMobileOpen(true)}
+              sx={{ ml: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
         </Toolbar>
       </AppBar>
       {renderMobileDrawer}
-      <AuthDialog open={authOpen} onClose={() => setAuthOpen(false)} />
+      <AuthDialog open={authOpen} handleClose={() => setAuthOpen(false)} />
+      <Box sx={{ height: 64 }} />
     </>
   );
 };

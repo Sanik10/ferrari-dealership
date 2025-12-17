@@ -197,6 +197,31 @@ const ServiceAppointment = () => {
     '09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'
   ];
   
+  // Fetch available time slots for a given date
+  // Move fetchAvailableTimeSlots ABOVE useEffect and ensure stable dependencies
+  const fetchAvailableTimeSlots = useCallback(async (date) => {
+    try {
+      setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const available = timeSlots.filter(() => Math.random() > 0.3);
+      setAvailableSlots(available);
+      if (formData.timeSlot && !available.includes(formData.timeSlot)) {
+        setFormData(prev => ({ ...prev, timeSlot: '' }));
+      }
+    } catch (error) {
+      console.error('Error fetching available slots:', error);
+      setError('Не удалось загрузить доступное время. Пожалуйста, выберите другую дату.');
+    } finally {
+      setLoading(false);
+    }
+  }, [formData.timeSlot]);
+
+  useEffect(() => {
+    if (formData.date) {
+      fetchAvailableTimeSlots(formData.date);
+    }
+  }, [formData.date, fetchAvailableTimeSlots]);
+
   // Fetch user's cars and available service types on component mount
   useEffect(() => {
     const fetchUserCars = async () => {
@@ -229,39 +254,7 @@ const ServiceAppointment = () => {
     
     fetchUserCars();
   }, []);
-  
-  // Handle date change to fetch available time slots
-  useEffect(() => {
-    if (formData.date) {
-      fetchAvailableTimeSlots(formData.date);
-    }
-  }, [formData.date, fetchAvailableTimeSlots]);
-  
-  // Fetch available time slots for a given date
-  const fetchAvailableTimeSlots = useCallback(async (date) => {
-    try {
-      setLoading(true);
-      // In a real app, you would call an API to get available slots for the selected date
-      // For now, we'll simulate a response
-      
-      // Simulate server delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Randomly remove some time slots to simulate unavailability
-      const available = timeSlots.filter(() => Math.random() > 0.3);
-      setAvailableSlots(available);
-      
-      // Clear previously selected time slot if it's no longer available
-      if (formData.timeSlot && !available.includes(formData.timeSlot)) {
-        setFormData(prev => ({ ...prev, timeSlot: '' }));
-      }
-    } catch (error) {
-      console.error('Error fetching available slots:', error);
-      setError('Не удалось загрузить доступное время. Пожалуйста, выберите другую дату.');
-    } finally {
-      setLoading(false);
-    }
-  }, [timeSlots, formData.timeSlot, setFormData, setAvailableSlots, setLoading, setError]);
+
   
   // Handle form input changes
   const handleInputChange = (event) => {
@@ -925,14 +918,12 @@ const ServiceAppointment = () => {
                     // Disable weekends (Saturday and Sunday)
                     return date.getDay() === 0 || date.getDay() === 6;
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      variant="outlined"
-                      InputProps={{
-                        ...params.InputProps,
-                        sx: { 
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      variant: 'outlined',
+                      InputProps: {
+                        sx: {
                           color: 'white',
                           '& .MuiOutlinedInput-notchedOutline': {
                             borderColor: 'rgba(255, 255, 255, 0.3)',
@@ -944,12 +935,12 @@ const ServiceAppointment = () => {
                             borderColor: '#FF2800',
                           }
                         }
-                      }}
-                      InputLabelProps={{
+                      },
+                      InputLabelProps: {
                         sx: { color: 'rgba(255, 255, 255, 0.7)' }
-                      }}
-                    />
-                  )}
+                      }
+                    }
+                  }}
                 />
               </LocalizationProvider>
               

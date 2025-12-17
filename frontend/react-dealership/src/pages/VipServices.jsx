@@ -103,12 +103,31 @@ const StyledAccordion = styled(Accordion)(({ theme }) => ({
   }
 }));
 
+import { useAuth } from '../contexts/AuthContext';
 // Main VipServices component
 const VipServices = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
-  
+  const { currentUser } = useAuth();
+  const isVip = currentUser?.isVip;
+
+  // Ограничение доступа к VIP-услугам
+  if (!isVip) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Box sx={{ textAlign: 'center', p: 4, background: 'rgba(30,30,30,0.8)', borderRadius: 4 }}>
+          <Typography variant="h5" color="error" gutterBottom>
+            VIP-услуги доступны только для VIP-клиентов!
+          </Typography>
+          <Typography variant="body1" color="white">
+            Пожалуйста, обратитесь к менеджеру для получения VIP-статуса.
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
   // State variables
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

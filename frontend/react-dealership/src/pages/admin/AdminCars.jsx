@@ -119,14 +119,8 @@ const AdminCars = () => {
   ];
   
   const { user } = useAuth();
-  
-  // Fetch cars on component mount
-  useEffect(() => {
-    console.log("AdminCars компонент загружен");
-    console.log("AdminCars - Пользователь:", user);
-    console.log("AdminCars - Роль пользователя:", user?.role);
-    
-    const fetchCars = async () => {
+
+  const fetchCars = async () => {
       setLoading(true);
       try {
         const response = await axios.get(`${API_URL}/api/cars`, {
@@ -146,6 +140,12 @@ const AdminCars = () => {
         setLoading(false);
       }
     };
+  
+  // Fetch cars on component mount
+  useEffect(() => {
+    console.log("AdminCars компонент загружен");
+    console.log("AdminCars - Пользователь:", user);
+    console.log("AdminCars - Роль пользователя:", user?.role);
     
     fetchCars();
   }, [user]);

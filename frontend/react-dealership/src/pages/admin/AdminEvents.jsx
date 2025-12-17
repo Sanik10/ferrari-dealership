@@ -158,6 +158,42 @@ const eventTypes = [
   { value: 'other', label: 'Другое' }
 ];
 
+const mapEventTypeToBackend = (uiType) => {
+  switch (uiType) {
+    case 'launch':
+      return 'car_launch';          // Запуск нового авто
+    case 'race':
+      return 'track_day';           // Гоночное событие/трек‑день
+    case 'exhibition':
+      return 'exhibition';          // Совпадает
+    case 'meeting':
+      return 'gala_dinner';         // Встреча владельцев ~ светское событие
+    case 'test_drive':
+      return 'driving_experience';  // Групповой тест‑драйв
+    case 'other':
+    default:
+      return 'vip_tour';            // Остальное кидаем в vip_tour
+  }
+};
+
+const mapBackendTypeToUi = (backendType) => {
+  switch (backendType) {
+    case 'car_launch':
+      return 'launch';
+    case 'track_day':
+      return 'race';
+    case 'exhibition':
+      return 'exhibition';
+    case 'gala_dinner':
+      return 'meeting';
+    case 'driving_experience':
+      return 'test_drive';
+    case 'vip_tour':
+    default:
+      return 'other';
+  }
+};
+
 // Main component
 const AdminEvents = () => {
   const theme = useTheme();
@@ -218,20 +254,34 @@ const AdminEvents = () => {
   
   // Fetch events from API
   const fetchEvents = async () => {
-    try {
-      setLoading(true);
-      const response = await eventAPI.getEvents();
-      
-      if (response.data) {
-        setEvents(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      setError('Не удалось загрузить мероприятия. Пожалуйста, попробуйте позже.');
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+    const response = await eventAPI.getEvents();
+    
+    if (response.data) {
+      const rawEvents = response.data;
+
+      // Преобразуем backend-схему в ту, с которой работает админка
+      const mappedEvents = rawEvents.map(ev => ({
+        ...ev,
+        title: ev.name,                         // name -> title
+        date: ev.eventDate,                     // eventDate -> date
+        endDate: ev.registrationDeadline || null,
+        type: mapBackendTypeToUi(ev.eventType), // eventType -> type
+        imageUrl: ev.image || '',               // image -> imageUrl
+        featured: !!ev.vipOnly,                 // vipOnly -> featured
+        active: ev.status !== 'cancelled',      // status -> active
+      }));
+
+      setEvents(mappedEvents);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    setError('Не удалось загрузить мероприятия. Пожалуйста, попробуйте позже.');
+  } finally {
+    setLoading(false);
+  }
+};
   
   // Handle dialog open for adding an event
   const handleAddEventClick = () => {
@@ -397,7 +447,9 @@ const AdminEvents = () => {
     }
     
     // Validate capacity
-    if (formData.capacity) {
+    if (!formData.capacity) {
+      errors.capacity = 'Вместимость обязательна';
+    } else {
       const capacity = parseInt(formData.capacity);
       if (isNaN(capacity) || capacity <= 0) {
         errors.capacity = 'Вместимость должна быть положительным числом';
@@ -422,62 +474,66 @@ const AdminEvents = () => {
   };
   
   // Handle form submission
-  const handleSubmitForm = async () => {
-    if (!validateForm()) return;
-    
-    try {
-      // Prepare form data for submission
-      const eventData = new FormData();
-      
-      // Add all form fields
-      for (const key in formData) {
-        if (key === 'newImage') continue; // Handle image separately
-        if (key === 'date' || key === 'endDate') {
-          if (formData[key]) {
-            eventData.append(key, formData[key].toISOString());
-          }
-        } else {
-          eventData.append(key, formData[key]);
-        }
-      }
-      
-      // Add image if present
-      if (formData.newImage) {
-        eventData.append('image', formData.newImage);
-      }
-      
-      if (dialogMode === 'add') {
-        // Add new event
-        await eventAPI.addEvent(eventData);
-        setSnackbar({
-          open: true,
-          message: 'Мероприятие успешно добавлено',
-          severity: 'success'
-        });
-      } else {
-        // Update existing event
-        await eventAPI.updateEvent(selectedEvent.id, eventData);
-        setSnackbar({
-          open: true,
-          message: 'Мероприятие успешно обновлено',
-          severity: 'success'
-        });
-      }
-      
-      // Refresh events list
-      fetchEvents();
-      
-      // Close dialog
-      handleCloseDialog();
-    } catch (error) {
-      console.error('Error submitting event data:', error);
+const handleSubmitForm = async () => {
+  if (!validateForm()) return;
+
+  try {
+    const eventData = new FormData();
+    eventData.append('name', formData.title.trim());                // title -> name
+    eventData.append('description', formData.description.trim());   // описание
+
+    if (formData.date) {
+      eventData.append('eventDate', formData.date.toISOString());
+    }
+
+    if (formData.endDate) {
+      eventData.append('registrationDeadline', formData.endDate.toISOString());
+    }
+
+    eventData.append('location', formData.location.trim());
+    eventData.append('capacity', formData.capacity);
+    eventData.append('eventType', mapEventTypeToBackend(formData.type));
+    eventData.append('vipOnly', formData.featured ? 'true' : 'false');
+
+    // Если нужно, можно передавать статус, но сейчас контроллер сам ставит 'upcoming'
+    // eventData.append('status', formData.active ? 'upcoming' : 'cancelled');
+
+    if (formData.newImage) {
+      eventData.append('image', formData.newImage);
+    } else if (formData.imageUrl) {
+      eventData.append('image', formData.imageUrl);
+    }
+
+    if (dialogMode === 'add') {
+      await eventAPI.createEvent(eventData);
       setSnackbar({
         open: true,
-        message: `Не удалось ${dialogMode === 'add' ? 'добавить' : 'обновить'} мероприятие.`,
-        severity: 'error'
+        message: 'Мероприятие успешно добавлено',
+        severity: 'success'
+      });
+    } else {
+      await eventAPI.updateEvent(selectedEvent.id, eventData);
+      setSnackbar({
+        open: true,
+        message: 'Мероприятие успешно обновлено',
+        severity: 'success'
       });
     }
-  };
+
+    // Обновляем список
+    await fetchEvents();
+
+    // Закрываем диалог
+    handleCloseDialog();
+  } catch (error) {
+    console.error('Error submitting event data:', error);
+    setSnackbar({
+      open: true,
+      message: `Не удалось ${dialogMode === 'add' ? 'добавить' : 'обновить'} мероприятие.`,
+      severity: 'error'
+    });
+  }
+};
   
   // Handle event deletion
   const handleDeleteEvent = async () => {

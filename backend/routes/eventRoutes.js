@@ -12,12 +12,31 @@ router.get('/', eventController.getAllEvents);
 router.get('/:id', eventController.getEventById);
 
 // Маршруты требующие авторизации
-router.post('/', [authMiddleware, managerMiddleware], eventController.createEvent);
-router.put('/:id', [authMiddleware, managerMiddleware], eventController.updateEvent);
+
+// СОЗДАНИЕ МЕРОПРИЯТИЯ С ИЗОБРАЖЕНИЕМ
+router.post(
+  '/',
+  [authMiddleware, managerMiddleware, eventUploader.single('image')],
+  eventController.createEvent
+);
+
+// ОБНОВЛЕНИЕ МЕРОПРИЯТИЯ С ИЗОБРАЖЕНИЕМ (если нужно редактировать картинку)
+router.put(
+  '/:id',
+  [authMiddleware, managerMiddleware, eventUploader.single('image')],
+  eventController.updateEvent
+);
+
 router.delete('/:id', [authMiddleware, adminMiddleware], eventController.deleteEvent);
 router.put('/:id/status', [authMiddleware, managerMiddleware], eventController.updateEventStatus);
 router.get('/:id/registrations', [authMiddleware, managerMiddleware], eventController.getEventRegistrations);
-router.post('/:id/upload-image', [authMiddleware, managerMiddleware, eventUploader.single('image')], eventController.uploadEventImage);
+
+// Отдельный маршрут только для картинки (можно оставить, если хочешь грузить картинку отдельно)
+router.post(
+  '/:id/upload-image',
+  [authMiddleware, managerMiddleware, eventUploader.single('image')],
+  eventController.uploadEventImage
+);
 
 // Маршруты для регистрации на события
 const eventRegistrationController = require('../controllers/eventRegistrationController');
@@ -33,4 +52,4 @@ router.get('/vip', [authMiddleware, vipAccessMiddleware], (req, res) => {
   eventController.getAllEvents(req, res);
 });
 
-module.exports = router; 
+module.exports = router;

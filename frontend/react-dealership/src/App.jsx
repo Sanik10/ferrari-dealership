@@ -142,7 +142,7 @@ const App = () => {
         }}
       >
         <img 
-          src="/images/ferrari-logo-animated.gif" 
+          src="/images/ferrari-logo-png-transparent.png" 
           alt="Ferrari Loading" 
           style={{ width: '150px' }}
         />
@@ -176,7 +176,7 @@ const App = () => {
                   <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
 
                   {/* VIP маршруты */}
-                  <Route path="/vip" element={<ProtectedRoute vipOnly><VipServices /></ProtectedRoute>} />
+                  <Route path="/vip-services" element={<ProtectedRoute vipOnly><VipServices /></ProtectedRoute>} />
 
                   {/* Админ маршруты */}
                   <Route path="/admin" element={<ProtectedRoute adminOnly><AdminLayout /></ProtectedRoute>}>

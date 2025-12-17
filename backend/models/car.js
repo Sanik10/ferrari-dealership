@@ -24,7 +24,7 @@ const Car = sequelize.define('Car', {
     allowNull: false,
   },
   price: {
-    type: DataTypes.DECIMAL(10, 2),
+    type: DataTypes.DECIMAL(15, 2),
     allowNull: false,
   },
   mileage: {
@@ -204,7 +204,7 @@ const Car = sequelize.define('Car', {
     defaultValue: false,
   },
   rentalPricePerDay: {
-    type: DataTypes.DECIMAL(10, 2),
+    type: DataTypes.DECIMAL(15, 2),
     allowNull: true,
   },
   testDriveAvailable: {

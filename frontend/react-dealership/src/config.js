@@ -8,8 +8,8 @@ export const APP_NAME = 'Ferrari Moscow';
 export const CURRENCY = '₽';
 
 // Конфигурация изображений
-export const DEFAULT_AVATAR = '/images/default-avatar.png';
-export const DEFAULT_CAR_IMAGE = '/images/default-car.jpg';
+export const DEFAULT_AVATAR = '/images/ferrari-logo.png';
+export const DEFAULT_CAR_IMAGE = '/images/car-placeholder.jpg';
 
 // Параметры пагинации
 export const ITEMS_PER_PAGE = 9;

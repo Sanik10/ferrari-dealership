@@ -171,7 +171,7 @@ const Login = () => {
             >
               <Box
                 component="img"
-                src="/images/ferrari-logo.png"
+                src="/images/ferrari-logo-png-transparent.png"
                 alt="Ferrari Logo"
                 sx={{
                   width: '120px',

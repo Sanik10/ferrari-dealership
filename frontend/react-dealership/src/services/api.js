@@ -369,11 +369,12 @@ export const eventAPI = {
   getVipEvents: () => api.get('/events/vip'),
   getEvent: (id) => api.get(`/events/${id}`),
   createEvent: (data) => {
-    const formData = createFormData(data);
+    const formData = data instanceof FormData ? data : createFormData(data);
     return api.post('/events', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
+
   updateEvent: (id, data) => {
     const formData = data instanceof FormData ? data : createFormData(data);
     return api.put(`/events/${id}`, formData, {
